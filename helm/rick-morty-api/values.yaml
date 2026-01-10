@@ -1,0 +1,40 @@
+# Default values for rick-morty-api
+
+replicaCount: 2
+
+image:
+  repository: rick-morty-api
+  tag: latest
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 5000
+
+ingress:
+  enabled: true
+  className: nginx
+  host: rick-morty.local
+
+resources:
+  requests:
+    memory: "64Mi"
+    cpu: "100m"
+  limits:
+    memory: "128Mi"
+    cpu: "200m"
+
+healthcheck:
+  path: /healthcheck
+  port: 5000
+
+# Probes configuration
+livenessProbe:
+  initialDelaySeconds: 10
+  periodSeconds: 30
+
+readinessProbe:
+  initialDelaySeconds: 5
+  periodSeconds: 10
+

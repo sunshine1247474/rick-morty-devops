@@ -1,0 +1,149 @@
+# CI/CD Pipeline for Rick and Morty API
+# This workflow builds, deploys, and tests the application on a local Kubernetes cluster
+
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  # Job 1: Build and Test
+  build:
+    name: Build Docker Image
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    - name: Install dependencies
+      run: |
+        cd app
+        pip install -r requirements.txt
+
+    - name: Test script runs successfully
+      run: |
+        cd app
+        python main.py
+        test -f output.csv
+        echo "CSV file created successfully!"
+
+    - name: Build Docker image
+      run: |
+        docker build -t rick-morty-api:${{ github.sha }} .
+        docker tag rick-morty-api:${{ github.sha }} rick-morty-api:latest
+
+    - name: Save Docker image
+      run: |
+        docker save rick-morty-api:latest > /tmp/rick-morty-api.tar
+
+    - name: Upload Docker image artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: docker-image
+        path: /tmp/rick-morty-api.tar
+
+  # Job 2: Deploy to Kubernetes and Test
+  deploy-and-test:
+    name: Deploy to Kubernetes & Test
+    runs-on: ubuntu-latest
+    needs: build
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Download Docker image artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: docker-image
+        path: /tmp
+
+    - name: Create Kind cluster
+      uses: helm/kind-action@v1
+      with:
+        cluster_name: rick-morty-cluster
+
+    - name: Load Docker image into Kind
+      run: |
+        docker load < /tmp/rick-morty-api.tar
+        kind load docker-image rick-morty-api:latest --name rick-morty-cluster
+
+    - name: Deploy to Kubernetes
+      run: |
+        kubectl apply -f yamls/deployment.yaml
+        kubectl apply -f yamls/service.yaml
+        echo "Waiting for deployment to be ready..."
+        kubectl wait --for=condition=available --timeout=120s deployment/rick-morty-api
+
+    - name: Get deployment status
+      run: |
+        kubectl get pods
+        kubectl get services
+        kubectl get deployments
+
+    - name: Port forward and test endpoints
+      run: |
+        # Start port forwarding in background
+        kubectl port-forward service/rick-morty-api-service 8080:80 &
+        sleep 5
+        
+        # Test healthcheck endpoint
+        echo "Testing /healthcheck endpoint..."
+        HEALTH_RESPONSE=$(curl -s http://localhost:8080/healthcheck)
+        echo "Health Response: $HEALTH_RESPONSE"
+        
+        if echo "$HEALTH_RESPONSE" | grep -q "healthy"; then
+          echo "✅ Healthcheck passed!"
+        else
+          echo "❌ Healthcheck failed!"
+          exit 1
+        fi
+        
+        # Test characters endpoint
+        echo "Testing /characters endpoint..."
+        CHAR_RESPONSE=$(curl -s http://localhost:8080/characters)
+        CHAR_COUNT=$(echo "$CHAR_RESPONSE" | grep -o '"count":[0-9]*' | grep -o '[0-9]*')
+        echo "Characters count: $CHAR_COUNT"
+        
+        if [ "$CHAR_COUNT" -gt 0 ]; then
+          echo "✅ Characters endpoint passed! Found $CHAR_COUNT characters."
+        else
+          echo "❌ Characters endpoint failed!"
+          exit 1
+        fi
+        
+        # Test root endpoint
+        echo "Testing / endpoint..."
+        ROOT_RESPONSE=$(curl -s http://localhost:8080/)
+        echo "Root Response: $ROOT_RESPONSE"
+        
+        if echo "$ROOT_RESPONSE" | grep -q "Rick and Morty"; then
+          echo "✅ Root endpoint passed!"
+        else
+          echo "❌ Root endpoint failed!"
+          exit 1
+        fi
+
+    - name: Test Summary
+      run: |
+        echo "================================"
+        echo "🎉 All tests passed successfully!"
+        echo "================================"
+        echo "✅ Docker image built"
+        echo "✅ Kubernetes cluster created"
+        echo "✅ Application deployed"
+        echo "✅ /healthcheck - working"
+        echo "✅ /characters - working"
+        echo "✅ / - working"
+        echo "================================"
+
