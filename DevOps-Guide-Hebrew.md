@@ -1,4 +1,4 @@
-צריך <div dir="rtl" align="right">
+<div dir="rtl" align="right">
 
 # 📘 מדריך DevOps מקיף - הכנה לראיון עבודה
 
@@ -744,31 +744,11 @@ spec:
 
 **שאלת ראיון נפוצה:** "מה ההבדל בין סוגי Service?"
 
-**תשובה מלאה לראיון:**
-
-"Service פותר בעיה מרכזית: Pods הם זמניים, ה-IP שלהם משתנה. Service נותן כתובת קבועה."
-
-**4 סוגי Services בפירוט:**
-
-| סוג | איך עובד | נגישות | מתי להשתמש |
-|-----|----------|--------|------------|
-| **ClusterIP** | IP פנימי קבוע | רק מתוך הקלאסטר | Backend → DB, Microservices פנימיים |
-| **NodePort** | פותח Port (30000-32767) על כל Node | `NodeIP:Port` | Dev/Testing, On-prem בלי Cloud LB |
-| **LoadBalancer** | יוצר Cloud LB (ALB, GCP LB) | External IP יציב | **Production!** |
-| **ExternalName** | DNS alias לשירות חיצוני | N/A | גישה ל-RDS, APIs חיצוניים |
-
-**NodePort - למה לא ל-Production:**
-- Port לא סטנדרטי (לא 80/443)
-- צריך לדעת IP של Node ספציפי
-- אם Node נופל - אין גישה דרכו
-- אין Health checks ברמת ה-LB
-
-**LoadBalancer - מה קורה מאחורי הקלעים:**
-```
-User → Cloud LB → NodePort → ClusterIP → Pods
-       (34.1.2.3)   (מוסתר)    (מוסתר)
-```
-LoadBalancer "בונה" על שני הסוגים האחרים!
+| סוג | נגישות | שימוש |
+|-----|--------|-------|
+| **ClusterIP** | רק מתוך הקלאסטר | שירותים פנימיים |
+| **NodePort** | דרך פורט על כל Node | פיתוח ובדיקות |
+| **LoadBalancer** | דרך Load Balancer חיצוני | פרודקשן בענן |
 
 ## 5.6 Ingress - הסבר מלא
 
@@ -1485,152 +1465,21 @@ rick-morty-devops/
 | **NodePort** | Port על כל Node |
 | **LoadBalancer** | Cloud LB חיצוני |
 
-### ❓ "מה הן 4 אסטרטגיות הפריסה ב-Kubernetes?"
+### ❓ "4 סוגי פריסות?"
 
-**תשובה לראיון:**
-
-"יש כמה דרכים לעדכן אפליקציה ב-Production. כל אסטרטגיה מתאימה למצב אחר, תלוי אם יש לנו Downtime, כמה מהר רוצים Rollback, וכמה משאבים יש."
-
----
-
-**1. Rolling Update (ברירת מחדל)**
-
-**מה קורה:** מחליפים Pod אחד בכל פעם. תמיד יש Pods שרצים.
-
-```
-שלב 1: [v1] [v1] [v1] [v1]     ← 4 pods ישנים
-שלב 2: [v1] [v1] [v1] [v2]     ← מוסיפים 1 חדש, מורידים 1 ישן
-שלב 3: [v1] [v1] [v2] [v2]     ← ממשיכים
-שלב 4: [v1] [v2] [v2] [v2]     
-שלב 5: [v2] [v2] [v2] [v2]     ← הושלם!
-```
-
-**יתרונות:** Zero downtime, Rollback קל (`kubectl rollout undo`)
-**חסרונות:** שתי גרסאות רצות במקביל (צריך backward compatibility)
-**מתי:** **ברירת מחדל.** רוב הפריסות.
-
-**הגדרה ב-YAML:**
-```yaml
-strategy:
-  type: RollingUpdate
-  rollingUpdate:
-    maxSurge: 1        # כמה להוסיף מעל הרצוי
-    maxUnavailable: 0  # כמה יכולים להיות למטה
-```
-
----
-
-**2. Recreate**
-
-**מה קורה:** מורידים את כל הישנים, מעלים את כל החדשים.
-
-```
-שלב 1: [v1] [v1] [v1] [v1]     ← כולם רצים
-שלב 2: [  ] [  ] [  ] [  ]     ← מורידים הכל (DOWNTIME!)
-שלב 3: [v2] [v2] [v2] [v2]     ← מעלים חדשים
-```
-
-**יתרונות:** פשוט, אין שתי גרסאות במקביל
-**חסרונות:** יש Downtime!
-**מתי:** 
-- כשאי אפשר להריץ שתי גרסאות (שינוי schema ב-DB)
-- Development environments
-
-**הגדרה ב-YAML:**
-```yaml
-strategy:
-  type: Recreate
-```
-
----
-
-**3. Blue-Green**
-
-**מה קורה:** מעלים סביבה חדשה שלמה (Green), בודקים שהיא עובדת, ואז מעבירים את התעבורה.
-
-```
-Blue (v1):  [v1] [v1] [v1] [v1]  ← Live traffic
-Green (v2): [v2] [v2] [v2] [v2]  ← מוכן, בבדיקות
-
-*Switch!* (משנים DNS/LB)
-
-Blue (v1):  [v1] [v1] [v1] [v1]  ← Standby (rollback)
-Green (v2): [v2] [v2] [v2] [v2]  ← Live traffic
-```
-
-**יתרונות:** Zero downtime, Rollback מיידי (פשוט מחזירים traffic)
-**חסרונות:** דורש כפול משאבים!
-**מתי:**
-- כשחייבים Rollback מיידי
-- שינויים קריטיים (אפשר לבדוק לפני Switch)
-
-**איך מממשים:** לא מובנה ב-K8s. משתמשים ב:
-- שני Deployments + Service selector
-- Argo Rollouts
-- Istio
-
----
-
-**4. Canary**
-
-**מה קורה:** שולחים אחוז קטן מהתעבורה לגרסה החדשה. אם הכל בסדר - מגדילים בהדרגה.
-
-```
-שלב 1: 5% ל-v2
-[v1] [v1] [v1] [v1] [v1] [v1] [v1] [v1] [v1] [v2]
-                                              ↑
-                                           5% traffic
-
-שלב 2: אם OK → 25% ל-v2
-[v1] [v1] [v1] [v1] [v1] [v1] [v1] [v2] [v2] [v2]
-
-שלב 3: אם OK → 100% ל-v2
-[v2] [v2] [v2] [v2] [v2] [v2] [v2] [v2] [v2] [v2]
-```
-
-**יתרונות:** בדיקה אמיתית ב-Production, סיכון מינימלי
-**חסרונות:** מורכב לממש, דורש monitoring טוב
-**מתי:**
-- Features חדשים עם סיכון
-- שינויים משמעותיים
-
-**איך מממשים:**
-- Istio (traffic splitting)
-- Argo Rollouts
-- Flagger
-
----
-
-**סיכום:**
-
-| אסטרטגיה | Downtime | Rollback | משאבים | שימוש |
-|----------|----------|----------|--------|-------|
-| Rolling | ❌ אין | מהיר | רגיל | ברירת מחדל |
-| Recreate | ✅ יש | מהיר | רגיל | DB migrations |
-| Blue-Green | ❌ אין | מיידי | כפול | Critical apps |
-| Canary | ❌ אין | מהיר | +10-20% | High risk changes |
-
----
+| סוג | איך עובד |
+|-----|----------|
+| **Rolling Update** | מחליף בהדרגה |
+| **Recreate** | מוחק הכל → מעלה חדש |
+| **Blue-Green** | סביבה חדשה → Switch |
+| **Canary** | % קטן מהמשתמשים |
 
 ### ❓ "מהו Istio?"
 
-**תשובה לראיון:**
-
-"Istio זה Service Mesh - שכבה שמנהלת את התקשורת בין Microservices. במקום שכל שירות יטפל בעצמו ב-retry, timeout, encryption - Istio עושה את זה בשבילו."
-
-**איך עובד:** מוסיף Sidecar container (Envoy proxy) לכל Pod. כל התקשורת עוברת דרכו.
-
-**3 יכולות מרכזיות:**
-| יכולת | מה עושה |
-|-------|---------|
-| **Traffic Management** | Load balancing, A/B testing, Canary releases, Retries |
-| **Security** | mTLS אוטומטי בין services, Authorization policies |
-| **Observability** | Metrics, Distributed tracing, Logging |
-
-**מתי צריך:**
-- הרבה Microservices
-- רוצים mTLS בין הכל
-- צריכים traffic splitting (Canary)
+**Istio** = Service Mesh.
+- Traffic Management
+- Security (mTLS)
+- Observability
 
 ---
 
@@ -1831,308 +1680,98 @@ GET (Read), POST (Create), PUT (Update), DELETE (Delete)
 
 ### ❓ "מה זה Multi-Stage Build?"
 
-**תשובה לראיון:**
+**איך הייתי עונה בראיון:**
 
-"Multi-Stage Build זה טכניקה לבניית Docker Images בכמה שלבים, כאשר כל שלב יכול להשתמש ב-Base Image שונה. הרעיון המרכזי הוא להפריד בין **שלב הבנייה (Build)** לבין **שלב ההרצה (Runtime)**, ובסוף לקחת רק את מה שצריך לImage הסופי."
+"Multi-Stage Build זה טכניקה שבה אני בונה Docker Image בכמה שלבים נפרדים, כאשר ה-Image הסופי מכיל רק את מה שצריך להריץ את האפליקציה - בלי כל הכלים שהשתמשתי בהם כדי לבנות אותה.
 
-**למה בכלל צריך את זה? בוא נבין את הבעיה:**
+**הבעיה שזה פותר:**
+כשאני בונה אפליקציה, אני צריך כלים - compiler, npm, build tools. אבל ב-Production אני לא צריך אותם! אם אני משאיר אותם ב-Image, קורות שתי בעיות:
+1. **ה-Image ענק** - במקום 50MB, הוא 800MB
+2. **פגיעויות אבטחה** - כל כלי זה עוד קוד שיכול להיות פגיע
 
-כשאני בונה אפליקציית Node.js לדוגמה, בשלב הפיתוח אני צריך:
-- Node.js עצמו (כ-900MB)
-- npm לניהול packages
-- כל ה-devDependencies (webpack, typescript, babel...)
-- קבצי source code
-
-אבל ב-**Production** - כשהאפליקציה רצה - אני צריך רק:
-- שרת web קטן (nginx - 20MB)
-- הקבצים שנבנו (HTML, CSS, JS מקומפל)
-
-**זו בדיוק הבעיה:** אם אני שם הכל ב-Image אחד, אני גורר 900MB של כלים שאני לא צריך בהרצה!
-
-**איך Multi-Stage פותר את זה:**
+**איך זה עובד - Build vs Runtime:**
 
 ```dockerfile
-# ═══════════════════════════════════════════════════════
-# STAGE 1: BUILD (שלב הבנייה)
-# ═══════════════════════════════════════════════════════
-# כאן אני משתמש ב-Image גדול עם כל הכלים
+# ========== STAGE 1: BUILD ==========
+# פה יש לי את כל הכלים - Node.js, npm, webpack
 FROM node:18 AS builder
-
 WORKDIR /app
-
-# מעתיק את קבצי התלויות ומתקין
 COPY package*.json ./
-RUN npm install          # כולל devDependencies!
-
-# מעתיק את כל הקוד ובונה
+RUN npm install          # מתקין dependencies
 COPY . .
 RUN npm run build        # יוצר תיקיית dist/
 
-# בשלב הזה יש לי:
-# - node_modules (מאות MB)
-# - קבצי source
-# - קבצי build (dist/)
-# - כל כלי הפיתוח
-
-
-# ═══════════════════════════════════════════════════════
-# STAGE 2: RUNTIME (שלב ההרצה) - זה ה-Image הסופי!
-# ═══════════════════════════════════════════════════════
-# מתחיל מ-Image חדש ונקי!
+# ========== STAGE 2: RUNTIME ==========
+# פה יש לי רק nginx קטן - בלי Node, בלי npm!
 FROM nginx:alpine
-
-# מעתיק רק את התוצר מה-Stage הקודם
 COPY --from=builder /app/dist /usr/share/nginx/html
-
-# זהו! ה-Image הסופי מכיל רק:
-# - nginx (~20MB)
-# - הקבצים שנבנו (כמה MB)
-# סה"כ: ~25MB במקום ~900MB!
+# זהו! ה-Image הסופי מכיל רק nginx + הקבצים הסטטיים
 ```
 
-**מה קורה כאן בפועל:**
+**Build Stage** = הסביבה שבה אני בונה (Node.js, npm, compiler)
+**Runtime Stage** = הסביבה שבה האפליקציה רצה (רק nginx)
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                    MULTI-STAGE BUILD                            │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                 │
-│  STAGE 1 - BUILD:                                               │
-│  ┌─────────────────────────────────────────────────────────┐   │
-│  │  FROM node:18                        (900MB base)       │   │
-│  │  ├── npm install                     (+300MB deps)      │   │
-│  │  ├── npm run build                   (creates dist/)    │   │
-│  │  │                                                      │   │
-│  │  │  מה יש כאן:                                          │   │
-│  │  │  ✓ Node.js runtime                                   │   │
-│  │  │  ✓ npm                                               │   │
-│  │  │  ✓ node_modules/                                     │   │
-│  │  │  ✓ webpack, babel, typescript...                     │   │
-│  │  │  ✓ source code                                       │   │
-│  │  │  ✓ dist/ (התוצר הסופי)                               │   │
-│  │  │                                                      │   │
-│  │  │  גודל: ~1.2GB                                        │   │
-│  │  └──────────────────────────────────────────────────────┘   │
-│                         │                                       │
-│                         │ COPY --from=builder                   │
-│                         │ (מעתיק רק את dist/)                   │
-│                         ▼                                       │
-│  STAGE 2 - RUNTIME:                                             │
-│  ┌─────────────────────────────────────────────────────────┐   │
-│  │  FROM nginx:alpine                   (20MB base)        │   │
-│  │  └── dist/                           (+5MB files)       │   │
-│  │                                                         │   │
-│  │  מה יש כאן:                                             │   │
-│  │  ✓ nginx web server                                     │   │
-│  │  ✓ HTML/CSS/JS הסופיים                                  │   │
-│  │  ✗ אין Node.js                                          │   │
-│  │  ✗ אין npm                                              │   │
-│  │  ✗ אין node_modules                                     │   │
-│  │  ✗ אין כלי build                                        │   │
-│  │                                                         │   │
-│  │  גודל: ~25MB                                            │   │
-│  └─────────────────────────────────────────────────────────┘   │
-│                                                                 │
-│  חיסכון: 1.2GB → 25MB = חיסכון של 98%!                         │
-│                                                                 │
-└─────────────────────────────────────────────────────────────────┘
-```
-
-**שלושת היתרונות המרכזיים:**
-
-| יתרון | הסבר מפורט |
-|-------|------------|
-| **Image קטן** | פחות מקום באחסון, פחות זמן להעברה ברשת, פחות זמן ל-Pull. במקום 1GB, יש לך 25MB. |
-| **אבטחה** | ככל שיש פחות כלים ב-Image, יש פחות "משטח תקיפה". אם אין npm בProduction - אי אפשר לנצל פגיעויות שלו. |
-| **הפרדה נקייה** | מה שצריך לבנות (compilers, bundlers) נפרד ממה שצריך להריץ (web server). כל אחד עושה את התפקיד שלו. |
-
-**מתי להשתמש:**
-- אפליקציות שצריכות compilation (Go, Java, TypeScript, React)
-- כשרוצים Image קטן ל-Production
-- כשיש הרבה devDependencies שלא צריך בהרצה
+**התוצאה:**
+- Image קטן (50MB במקום 800MB)
+- פחות פגיעויות (אין npm ב-Production)
+- Faster deployments
+- פחות משאבים"
 
 ---
 
 ### ❓ "מה זה Volumes ו-Bind Mounts?"
 
-**תשובה לראיון:**
+**איך הייתי עונה בראיון:**
 
-"שניהם דרכים לשמור נתונים מחוץ ל-Container, אבל יש הבדל חשוב במי מנהל אותם ומתי להשתמש בכל אחד."
+"הבעיה: כשContainer נמחק, כל המידע שבתוכו נמחק. אם יש לי Database בתוך Container והוא קורס - איבדתי את כל הנתונים. Volumes פותרים את זה.
 
-**הבעיה:** Container הוא Ephemeral (זמני) - כשהוא נמחק, כל הנתונים שבתוכו נמחקים. 
-אם יש לי Database ב-Container ואני עושה לו restart - איבדתי את כל המידע!
-
-**הפתרון - 3 סוגי אחסון:**
-
-| סוג | מי מנהל | איפה נשמר | מתי להשתמש |
-|-----|---------|-----------|------------|
-| **Volume** | Docker מנהל | `/var/lib/docker/volumes/` | Production - Database, persistent data |
-| **Bind Mount** | אתה מנהל | תיקייה שאתה בוחר | Development - קוד שמשתנה תדיר |
-| **tmpfs** | זיכרון RAM | לא נשמר לדיסק! | Sensitive data, cache זמני |
-
-**Volume - מתי ולמה:**
+**Volume (מנוהל על ידי Docker):**
+Docker יוצר תיקייה מיוחדת שהוא מנהל. אני לא יודע איפה בדיוק היא נמצאת בדיסק, ולא צריך לדעת. המידע נשמר גם אם ה-Container נמחק.
 ```bash
-# Docker יוצר ומנהל את התיקייה
-docker run -v mydata:/var/lib/mysql mysql
-
-# היתרונות:
-# ✓ Docker מנהל permissions
-# ✓ עובד אותו דבר על כל OS
-# ✓ קל לגבות (docker volume backup)
-# ✓ אפשר לשתף בין containers
+docker run -v mydata:/app/data mysql
+#          ↑ שם ה-Volume    ↑ איפה ב-Container
 ```
+**מתי:** Production, Databases, מידע קריטי
 
-**Bind Mount - מתי ולמה:**
+**Bind Mount (תיקייה שלי):**
+אני מחבר תיקייה ספציפית מהמחשב שלי לתוך ה-Container. כל שינוי בתיקייה משתקף מיד ב-Container.
 ```bash
-# אתה מצביע לתיקייה קיימת שלך
-docker run -v /home/dev/mycode:/app node
-
-# היתרונות:
-# ✓ משנה קוד → רואה שינויים מיד ב-Container
-# ✓ שליטה מלאה על המיקום
-# ✓ מעולה לפיתוח (hot reload)
+docker run -v /home/user/code:/app myapp
+#          ↑ תיקייה במחשב שלי  ↑ איפה ב-Container
 ```
+**מתי:** Development - כי אני רוצה לערוך קוד ולראות שינויים מיד
 
-**tmpfs - מתי ולמה:**
-```bash
-# נשמר רק בזיכרון
-docker run --tmpfs /tmp myapp
+**tmpfs (זיכרון בלבד):**
+המידע נשמר רק בזיכרון, לא בדיסק. כש-Container נעצר - הכל נמחק.
+**מתי:** מידע רגיש שלא רוצים שיישאר בדיסק"
 
-# שימושים:
-# ✓ Secrets שלא רוצים על דיסק
-# ✓ Session data
-# ✓ Cache זמני
-```
-
----
+| סוג | איפה נשמר | מי מנהל | Persists? | שימוש |
+|-----|-----------|---------|-----------|-------|
+| **Volume** | Docker storage | Docker | ✅ כן | Production, DBs |
+| **Bind Mount** | תיקייה שלך | אתה | ✅ כן | Development |
+| **tmpfs** | RAM | - | ❌ לא | Secrets, Cache |
 
 ### ❓ "מה זה Docker Compose?"
 
-**תשובה לראיון:**
+כלי להרצת מספר Containers יחד. קובץ YAML אחד, פקודה אחת.
 
-"Docker Compose זה כלי שמאפשר להגדיר ולהריץ מספר Containers יחד כ-Application אחד. במקום להריץ 5 פקודות `docker run` ארוכות, אני כותב קובץ YAML אחד שמתאר את כל ה-Services, ומריץ פקודה אחת."
+### ❓ "Docker Networking Types?"
 
-**למה צריך את זה?**
+| Type | תיאור |
+|------|-------|
+| **bridge** | ברירת מחדל - מבודד |
+| **host** | רשת של ה-host |
+| **none** | ללא רשת |
+| **overlay** | בין hosts |
 
-בלי Compose - נגיד יש לי אפליקציה עם Web + DB + Redis:
-```bash
-# צריך להריץ 3 פקודות ארוכות
-docker network create mynet
-docker run -d --name db --network mynet -e POSTGRES_PASSWORD=secret postgres
-docker run -d --name redis --network mynet redis
-docker run -d --name web --network mynet -p 5000:5000 -e DB_HOST=db myapp
-```
+### ❓ "Container Restart Policies?"
 
-**עם Compose - קובץ אחד:**
-```yaml
-# docker-compose.yml
-version: '3.8'
-
-services:
-  web:
-    build: .
-    ports:
-      - "5000:5000"
-    environment:
-      - DB_HOST=db
-      - REDIS_HOST=redis
-    depends_on:
-      - db
-      - redis
-  
-  db:
-    image: postgres:15
-    environment:
-      - POSTGRES_PASSWORD=secret
-    volumes:
-      - db-data:/var/lib/postgresql/data
-  
-  redis:
-    image: redis:7-alpine
-
-volumes:
-  db-data:
-```
-
-**פקודה אחת:**
-```bash
-docker-compose up -d      # מעלה הכל
-docker-compose down       # מוריד הכל
-docker-compose logs web   # לוגים של service ספציפי
-```
-
-**מה Compose עושה בשבילך:**
-- יוצר Network משותף אוטומטית
-- מנהל סדר העלייה (depends_on)
-- שמות DNS פנימיים (web יכול לפנות ל-db בשם)
-- ניהול Volumes
-
-### ❓ "מה זה Docker Networking?"
-
-**תשובה לראיון:**
-
-"Docker יוצר רשתות וירטואליות שמאפשרות ל-Containers לתקשר ביניהם. יש כמה סוגי רשתות, כל אחת למטרה שונה."
-
-**4 סוגי רשתות:**
-
-| Type | איך עובד | מתי להשתמש |
-|------|----------|------------|
-| **bridge** | רשת פרטית מבודדת. Containers מקבלים IP פנימי ויכולים לדבר ביניהם. | **ברירת מחדל.** כשרוצים בידוד בין Containers על אותו Host |
-| **host** | Container משתמש ישירות ברשת של המכונה. אין בידוד! | ביצועים מקסימליים, כשהבידוד לא חשוב |
-| **none** | אין רשת בכלל. Container מבודד לגמרי | אבטחה, עיבוד offline |
-| **overlay** | רשת שמתפרסת על פני כמה Hosts | Docker Swarm, Kubernetes |
-
-**דוגמה - למה bridge חשוב:**
-```bash
-# יוצר רשת
-docker network create my-app-network
-
-# Container A
-docker run -d --name web --network my-app-network nginx
-
-# Container B - יכול לפנות ל-"web" בשם!
-docker run -d --name app --network my-app-network myapp
-# בתוך app: curl http://web:80 ← עובד!
-```
-
-**בלי הגדרת רשת משותפת:**
-Containers על רשת bridge ברירת מחדל לא יכולים לפנות אחד לשני בשם - רק ב-IP (שמשתנה!).
-
----
-
-### ❓ "מה זה Container Restart Policies?"
-
-**תשובה לראיון:**
-
-"Restart Policy קובע מה Docker עושה כש-Container נעצר או קורס. זה חשוב ל-Production כי אנחנו רוצים שServices יעלו אוטומטית אחרי תקלה."
-
-**4 אפשרויות:**
-
-| Policy | מה קורה | מתי להשתמש |
-|--------|---------|------------|
-| `no` | לא מפעיל מחדש אף פעם | ברירת מחדל. Debug, one-time jobs |
-| `always` | תמיד מפעיל מחדש, גם אחרי reboot של המכונה | Production services קריטיים |
-| `on-failure` | מפעיל מחדש רק אם יצא עם error (exit code ≠ 0) | Services שצריכים לרוץ, אבל אם נעצרו בכוונה - נשארים למטה |
-| `unless-stopped` | כמו always, אבל אם עצרת ידנית - לא עולה | הכי נפוץ ל-Production |
-
-**דוגמה:**
-```bash
-# Production - תמיד עולה חזרה
-docker run -d --restart unless-stopped --name web nginx
-
-# מה קורה:
-# Container קרס → Docker מעלה אותו מחדש ✓
-# docker stop web → נשאר למטה ✓
-# Server reboot → לא עולה (כי עצרת ידנית) ✓
-```
-
-**ב-Docker Compose:**
-```yaml
-services:
-  web:
-    image: nginx
-    restart: unless-stopped
-```
+| Policy | התנהגות |
+|--------|---------|
+| `no` | לא מפעיל מחדש |
+| `always` | תמיד |
+| `on-failure` | רק ב-error |
+| `unless-stopped` | תמיד חוץ מאם עצרת |
 
 ---
 
@@ -2254,38 +1893,11 @@ input message: 'Deploy?', ok: 'Deploy!'
 
 ### ❓ "Vertical vs Horizontal Scaling?"
 
-**"מה ההבדל בין Vertical ל-Horizontal Scaling?"**
-
-יש לך אפליקציה שלא עומדת בעומס. מה עושים?
-
-**Vertical Scaling (Scale Up):**
-```
-לפני:  [Server: 2 CPU, 4GB RAM]
-         ↓ משדרגים
-אחרי:  [Server: 8 CPU, 32GB RAM]
-```
-לוקחים את אותו server ונותנים לו **יותר כוח**.
-
-**Horizontal Scaling (Scale Out):**
-```
-לפני:  [Server]
-
-אחרי:  [Server] [Server] [Server] [Server]
-              ↑
-         Load Balancer מפזר traffic
-```
-מוסיפים **עוד servers** מאותו סוג.
-
-| שאלה | Vertical | Horizontal |
-|------|----------|------------|
-| **מה משנים?** | גודל המכונה | כמות המכונות |
-| **יש גבול?** | כן! | כמעט אין |
-| **Downtime?** | בדרך כלל כן | לא |
-| **מורכבות** | פשוט | צריך LB |
-
-**מתי מה:**
-- **Database** → Vertical (קשה לפזר data)
-- **Web/API** → Horizontal (כל server עצמאי)
+| Vertical | Horizontal |
+|----------|------------|
+| יותר כח למכונה | יותר מכונות |
+| יש גבול | כמעט ללא גבול |
+| DBs | Stateless |
 
 ---
 
@@ -2586,23 +2198,43 @@ rate(5 minutes)    # כל 5 דקות
 
 ### NAT Gateway
 
-**מה זה:** מאפשר ל-Private Subnet לצאת לאינטרנט.
+**איך הייתי עונה בראיון:**
 
-**איך עובד:**
+"NAT Gateway פותר בעיה ספציפית: יש לי שרת ב-Private Subnet שצריך לצאת לאינטרנט (להוריד עדכונים, לקרוא ל-API חיצוני), אבל אני לא רוצה שמישהו מבחוץ יוכל להגיע אליו.
+
+**הבעיה:**
+- Private Subnet = אין גישה לאינטרנט
+- אבל צריך: `apt update`, `pip install`, Docker images
+
+**הפתרון:**
+NAT Gateway יושב ב-Public Subnet ומשמש כ'שער יציאה':
+
 ```
-Private EC2 → NAT Gateway (Public Subnet) → IGW → Internet
+EC2 ב-Private רוצה להגיע ל-google.com
+           │
+           ▼
+   ┌───────────────────┐
+   │   NAT Gateway     │ (יושב ב-Public Subnet)
+   │   IP: 3.4.5.6     │ ← מחליף את ה-IP המקורי
+   └─────────┬─────────┘
+             │
+             ▼
+   ┌───────────────────┐
+   │  Internet Gateway │
+   └─────────┬─────────┘
+             │
+             ▼
+         google.com
+         
+google.com רואה: בקשה מ-3.4.5.6 (ה-NAT)
+                 לא יודע שמאחורי זה EC2 ב-Private
 ```
 
-**מאפיינים:**
-- יציאה בלבד! אי אפשר להיכנס דרכו
-- יושב ב-Public Subnet
-- עלות: ~$0.045/שעה + Data processing
-- HA באותו AZ (צריך NAT לכל AZ ל-HA מלא)
+**המפתח:** יציאה בלבד! Traffic יכול לצאת, אבל אי אפשר להתחיל connection מבחוץ.
 
-**שימושים:**
-- EC2 ב-Private Subnet צריך לעדכן packages
-- Lambda ב-VPC צריך גישה לאינטרנט
-- ECS tasks צריכים למשוך images
+**עלות:** ~$0.045/שעה + $0.045 לכל GB (לא זול! לכן שוקלים Private Link)
+
+**HA:** NAT הוא per-AZ. לHA מלא - צריך NAT בכל AZ."
 
 ---
 
@@ -2719,24 +2351,98 @@ Inbound: Allow from sg-alb-12345 (רק ALB יכול)
 
 ### Subnet
 
-**מה זה:** חלוקה של VPC.
+**איך הייתי עונה בראיון:**
 
-**Public vs Private:**
+"Subnet זה חלוקה של ה-VPC לרשתות קטנות יותר. השאלה המרכזית היא: Public או Private?
 
-| מאפיין | Public | Private |
-|--------|--------|---------|
-| Route לאינטרנט | IGW ישיר | דרך NAT |
-| Public IP | כן | לא |
-| מה שמים | ALB, Bastion, NAT | DB, App servers |
+---
 
-**CIDR דוגמה:**
+**Public Subnet - פתוח לעולם:**
+
+**מה מייחד אותו:**
+1. יש Route ישיר ל-Internet Gateway
+2. Instances מקבלים Public IP
+3. אפשר להגיע אליהם מהאינטרנט
+
+**מה שמים ב-Public Subnet:**
+- Load Balancers (ALB/NLB) - חייבים לקבל Traffic מבחוץ
+- NAT Gateway - חייב להיות ב-Public כדי לצאת לאינטרנט
+- Bastion Host - שרת גישה לניהול
+
+**Route Table:**
 ```
-VPC: 10.0.0.0/16 (65,536 IPs)
-├── Public: 10.0.1.0/24 (256 IPs)
-├── Public: 10.0.2.0/24 (256 IPs)
-├── Private: 10.0.10.0/24 (256 IPs)
-└── Private: 10.0.11.0/24 (256 IPs)
+Destination    → Target
+10.0.0.0/16    → local (תנועה פנימית)
+0.0.0.0/0      → igw-xxx (כל השאר → אינטרנט)
 ```
+
+---
+
+**Private Subnet - מבודד מהעולם:**
+
+**מה מייחד אותו:**
+1. אין Route ישיר לאינטרנט
+2. אין Public IP
+3. אי אפשר להגיע מבחוץ (אלא דרך ALB או Bastion)
+
+**מה שמים ב-Private Subnet:**
+- Databases (RDS) - לא רוצים שיהיו חשופים
+- Application servers - מאחורי Load Balancer
+- Internal services
+
+**Route Table:**
+```
+Destination    → Target
+10.0.0.0/16    → local (תנועה פנימית)
+0.0.0.0/0      → nat-xxx (יציאה דרך NAT)
+```
+
+---
+
+**למה צריך את שניהם?**
+
+```
+אינטרנט
+    │
+    ▼
+┌─────────────────────────────────────────────────────┐
+│ VPC (10.0.0.0/16)                                   │
+│                                                     │
+│  Public Subnet (10.0.1.0/24)                       │
+│  ┌─────────────┐  ┌─────────────┐                  │
+│  │     ALB     │  │ NAT Gateway │                  │
+│  └──────┬──────┘  └──────┬──────┘                  │
+│         │                │                          │
+│ --------│----------------│------------------------- │
+│         │                │                          │
+│  Private Subnet (10.0.10.0/24)                     │
+│  ┌──────▼──────┐  ┌──────┴──────┐                  │
+│  │  App Server │  │  Database   │                  │
+│  │ (מקבל Traffic │  │ (יוצא לעדכונים)│              │
+│  │  מה-ALB)    │  │              │                  │
+│  └─────────────┘  └─────────────┘                  │
+│                                                     │
+└─────────────────────────────────────────────────────┘
+```
+
+**האפליקציה ב-Private:** מקבלת Traffic רק מה-ALB, לא ישירות מהאינטרנט
+**ה-Database ב-Private:** יוצא לאינטרנט (דרך NAT) רק לעדכונים, אי אפשר להיכנס אליו מבחוץ"
+
+---
+
+**CIDR - חישוב כתובות:**
+```
+VPC: 10.0.0.0/16        = 65,536 IPs
+├── Public:  10.0.1.0/24  = 256 IPs (AZ-a)
+├── Public:  10.0.2.0/24  = 256 IPs (AZ-b)
+├── Private: 10.0.10.0/24 = 256 IPs (AZ-a)
+└── Private: 10.0.11.0/24 = 256 IPs (AZ-b)
+```
+
+**כלל אצבע:** מספר גדול אחרי ה-/ = פחות כתובות
+- /16 = 65,536
+- /24 = 256
+- /28 = 16
 
 ---
 
@@ -2812,55 +2518,100 @@ env:
 
 ### Deployment Strategies - 4 אסטרטגיות פריסה
 
-**1. Rolling Update (ברירת מחדל)**
-```
-[v1] [v1] [v1] [v1]
-[v1] [v1] [v1] [v2]  ← מחליף אחד
-[v1] [v1] [v2] [v2]  ← מחליף עוד אחד
-[v1] [v2] [v2] [v2]
-[v2] [v2] [v2] [v2]  ← הושלם
-```
-- ✅ Zero downtime
-- ✅ Rollback קל
-- ⚠️ שתי גרסאות במקביל
+**איך הייתי עונה בראיון:**
 
-**2. Recreate**
+"יש 4 דרכים עיקריות לפרוס גרסה חדשה, וכל אחת מתאימה למצב אחר:
+
+---
+
+**1. Rolling Update (ברירת מחדל בקוברנטיס)**
+
+**מה קורה:** מחליפים Pod אחד בכל פעם. תמיד יש Pods שעובדים.
+
 ```
-[v1] [v1] [v1] [v1]
-[  ] [  ] [  ] [  ]  ← מוחק הכל
-[v2] [v2] [v2] [v2]  ← מעלה חדש
+התחלה:  [v1] [v1] [v1] [v1]    ← כולם v1
+שלב 1:  [v1] [v1] [v1] [v2]    ← אחד עודכן
+שלב 2:  [v1] [v1] [v2] [v2]    ← שניים עודכנו
+שלב 3:  [v1] [v2] [v2] [v2]    ← שלושה עודכנו
+סיום:   [v2] [v2] [v2] [v2]    ← כולם v2
 ```
-- ❌ יש Downtime!
-- ✅ אין שתי גרסאות
-- שימוש: כשאי אפשר 2 גרסאות (DB migrations)
+
+**יתרונות:** Zero downtime, Rollback פשוט עם `kubectl rollout undo`
+**חסרונות:** לזמן מסוים יש שתי גרסאות במקביל - צריך שהאפליקציה תתמוך בזה
+**מתי להשתמש:** רוב המקרים - זו ברירת המחדל והכי נפוצה
+
+---
+
+**2. Recreate (מחק והתקן מחדש)**
+
+**מה קורה:** מוחקים את כל ה-Pods הישנים, ורק אז מעלים חדשים.
+
+```
+התחלה:  [v1] [v1] [v1] [v1]    ← כולם v1
+שלב 1:  [  ] [  ] [  ] [  ]    ← מחקנו הכל! DOWNTIME
+שלב 2:  [v2] [v2] [v2] [v2]    ← הכל חדש
+```
+
+**יתרונות:** פשוט, אין שתי גרסאות
+**חסרונות:** יש DOWNTIME! האתר לא עובד לכמה שניות/דקות
+**מתי להשתמש:** כשאי אפשר להריץ שתי גרסאות (למשל migration של DB schema)
+
+---
 
 **3. Blue-Green**
-```
-Blue (v1):  [v1] [v1] [v1] [v1]  ← Live
-Green (v2): [v2] [v2] [v2] [v2]  ← Ready
 
-Switch DNS/LB:
-Blue (v1):  [v1] [v1] [v1] [v1]  ← Standby
-Green (v2): [v2] [v2] [v2] [v2]  ← Live
-```
-- ✅ Zero downtime
-- ✅ Instant rollback
-- ❌ כפול משאבים
+**מה קורה:** מעלים סביבה חדשה לגמרי (Green), בודקים שהיא עובדת, ואז מעבירים את כל ה-Traffic אליה בבת אחת.
 
-**4. Canary**
 ```
-שלב 1: 5% traffic ל-v2
-[v1] [v1] [v1] [v1] [v1] [v1] [v1] [v1] [v1] [v2]
+לפני:
+  Blue (v1):  [v1] [v1] [v1] [v1]  ← מקבל Traffic
+  Green (v2): [v2] [v2] [v2] [v2]  ← מוכן, לא מקבל Traffic
 
-שלב 2: 25% traffic ל-v2
-[v1] [v1] [v1] [v1] [v1] [v1] [v1] [v2] [v2] [v2]
-
-שלב 3: 100% traffic ל-v2
-[v2] [v2] [v2] [v2] [v2] [v2] [v2] [v2] [v2] [v2]
+אחרי Switch:
+  Blue (v1):  [v1] [v1] [v1] [v1]  ← Standby (לגיבוי)
+  Green (v2): [v2] [v2] [v2] [v2]  ← מקבל Traffic
 ```
-- ✅ בדיקה ב-Production
-- ✅ Gradual rollout
-- שימוש: Features חדשים, High risk changes
+
+**יתרונות:** Zero downtime, Rollback מיידי (פשוט מחזירים ל-Blue)
+**חסרונות:** צריך כפול משאבים (שתי סביבות מלאות)
+**מתי להשתמש:** כשחייבים Rollback מיידי, או כשרוצים לבדוק סביבה מלאה לפני Switch
+
+---
+
+**4. Canary (קנרית במכרה פחם)**
+
+**מה קורה:** מעלים גרסה חדשה רק לאחוז קטן מהמשתמשים. אם הכל בסדר - מגדילים בהדרגה.
+
+```
+שלב 1 (5% traffic):
+  [v1] [v1] [v1] [v1] [v1] [v1] [v1] [v1] [v1] [v2]
+  └─────────────── 95% ─────────────────┘    └5%┘
+
+שלב 2 (25% traffic):
+  [v1] [v1] [v1] [v1] [v1] [v1] [v1] [v2] [v2] [v2]
+  └─────────── 75% ───────────────┘  └── 25% ──┘
+
+שלב 3 (100% traffic):
+  [v2] [v2] [v2] [v2] [v2] [v2] [v2] [v2] [v2] [v2]
+  └─────────────────── 100% ────────────────────┘
+```
+
+**למה קנרית?** פעם שמו כלוב עם ציפור קנרית במכרות פחם. אם היא מתה - סימן שיש גז רעיל. פה זה אותו רעיון - מנסים על קבוצה קטנה קודם.
+
+**יתרונות:** בדיקה ב-Production עם משתמשים אמיתיים, מזהים בעיות מוקדם
+**חסרונות:** דורש Monitoring טוב, מורכב יותר לניהול
+**מתי להשתמש:** Features חדשים, שינויים מסוכנים, A/B testing"
+
+---
+
+**טבלת סיכום:**
+
+| אסטרטגיה | Downtime | Rollback | משאבים | מתי |
+|----------|----------|----------|--------|-----|
+| Rolling | ❌ אין | מהיר | רגיל | ברירת מחדל |
+| Recreate | ✅ יש! | מהיר | רגיל | DB migrations |
+| Blue-Green | ❌ אין | מיידי | x2 | צריך instant rollback |
+| Canary | ❌ אין | מהיר | מעט יותר | בדיקה ב-Prod |
 
 ---
 
@@ -3000,36 +2751,98 @@ affinity:
 
 ### Probes - בדיקות בריאות
 
-**3 סוגי Probes:**
+**איך הייתי עונה בראיון:**
 
-| Probe | שואל | אם נכשל | מתי לבדוק |
-|-------|------|---------|-----------|
-| **Liveness** | "אתה חי?" | Restart | כל הזמן |
-| **Readiness** | "אתה מוכן?" | לא שולחים traffic | כל הזמן |
-| **Startup** | "עלית?" | ממתינים | רק בהתחלה |
+"Probes הם הדרך של קוברנטיס לדעת אם האפליקציה שלי בריאה. בלעדיהם, קוברנטיס לא יודע אם משהו השתבש.
 
-**סוגי בדיקות:**
-- **httpGet:** GET request ל-endpoint
-- **tcpSocket:** בדיקת port פתוח
-- **exec:** הרצת command
+יש 3 סוגים, וכל אחד עונה על שאלה אחרת:
+
+---
+
+**1. Liveness Probe - "האם אתה עדיין חי?"**
+
+**הבעיה שזה פותר:** לפעמים אפליקציה נתקעת (deadlock, infinite loop) - היא לא קורסת, אבל גם לא עובדת. בלי Liveness Probe, קוברנטיס חושב שהכל בסדר.
+
+**מה קורה אם נכשל:** קוברנטיס עושה Restart ל-Container
+
+**דוגמה מהחיים:** 
+```
+קוברנטיס: "היי Container, אתה חי?"
+Container: *לא עונה*
+קוברנטיס: "אוקיי, אני הורג אותך ומעלה חדש"
+```
+
+---
+
+**2. Readiness Probe - "האם אתה מוכן לקבל Traffic?"**
+
+**הבעיה שזה פותר:** אפליקציה יכולה להיות חיה אבל לא מוכנה - למשל, היא עדיין מתחברת ל-Database או טוענת cache.
+
+**מה קורה אם נכשל:** קוברנטיס לא שולח Traffic ל-Pod (מוריד אותו מה-Service)
+
+**דוגמה מהחיים:**
+```
+קוברנטיס: "היי Container, אתה מוכן לעבוד?"
+Container: "רגע, אני עדיין טוען נתונים..."
+קוברנטיס: "אוקיי, לא שולח לך לקוחות עד שתהיה מוכן"
+```
+
+**ההבדל מ-Liveness:** Liveness הורג, Readiness רק מפסיק לשלוח Traffic
+
+---
+
+**3. Startup Probe - "האם עלית בכלל?"**
+
+**הבעיה שזה פותר:** יש אפליקציות שלוקח להן הרבה זמן לעלות (Java apps, loading ML models). בלי Startup Probe, ה-Liveness Probe יהרוג אותן לפני שהספיקו לעלות.
+
+**מה קורה אם נכשל:** ממתינים עוד (עד timeout)
 
 **דוגמה:**
 ```yaml
-livenessProbe:
+startupProbe:
   httpGet:
     path: /healthcheck
     port: 8080
-  initialDelaySeconds: 10
-  periodSeconds: 30
-  failureThreshold: 3
+  failureThreshold: 30   # 30 ניסיונות
+  periodSeconds: 10      # כל 10 שניות
+  # = 5 דקות להתעורר
+```
 
-readinessProbe:
+---
+
+**סוגי בדיקות (איך בודקים):**
+
+| סוג | איך עובד | מתי להשתמש |
+|-----|----------|------------|
+| **httpGet** | GET request ל-URL | Web apps (הכי נפוץ) |
+| **tcpSocket** | בדיקה אם Port פתוח | Databases, non-HTTP |
+| **exec** | מריץ command בתוך Container | בדיקות מורכבות |
+
+---
+
+**דוגמה מלאה:**
+```yaml
+livenessProbe:           # האם חי?
+  httpGet:
+    path: /healthcheck
+    port: 8080
+  initialDelaySeconds: 10  # תמתין 10 שניות לפני הבדיקה הראשונה
+  periodSeconds: 30        # בדוק כל 30 שניות
+  failureThreshold: 3      # אחרי 3 כישלונות - Restart
+
+readinessProbe:          # האם מוכן?
   httpGet:
     path: /ready
     port: 8080
   initialDelaySeconds: 5
   periodSeconds: 10
+  # אם נכשל - לא שולחים Traffic, לא הורגים
 ```
+
+**Best Practice:**
+- תמיד להגדיר Liveness + Readiness
+- Liveness בודק endpoint פשוט (`/healthcheck`)
+- Readiness בודק שהכל מוכן (`/ready` - כולל DB connection)"
 
 ---
 
@@ -3089,23 +2902,53 @@ kubectl create secret generic db-secret \
 
 ### Service - סוגים בפירוט
 
+**איך הייתי עונה בראיון:**
+
+"Service בקוברנטיס הוא הדרך לחשוף Pods לתקשורת. הבעיה: Pods מתים ונולדים כל הזמן, ה-IP שלהם משתנה. Service נותן כתובת קבועה.
+
+יש 4 סוגים, וחשוב להבין מתי להשתמש בכל אחד:
+
+---
+
 **1. ClusterIP (ברירת מחדל)**
-- נגיש רק מתוך הקלאסטר
-- מקבל IP פנימי
-- שימוש: שירותים פנימיים
+
+**מה זה:** Service שנגיש רק מתוך הקלאסטר. מקבל IP פנימי קבוע.
+
+**איך עובד:**
+```
+Pod A רוצה לדבר עם Pod B
+       ↓
+Pod A → ClusterIP Service (10.96.0.15) → Pod B
+       (כתובת קבועה)      (IP משתנה)
+```
 
 ```yaml
 spec:
-  type: ClusterIP
+  type: ClusterIP  # ברירת מחדל, אפשר לא לכתוב
   ports:
-  - port: 80
-    targetPort: 8080
+  - port: 80          # איזה Port ה-Service מאזין
+    targetPort: 8080  # לאיזה Port ב-Pod לשלוח
 ```
 
+**מתי להשתמש:** שירותים פנימיים - Backend שמדבר עם Database, Microservices שמדברים ביניהם
+**יתרונות:** פשוט, מאובטח (לא חשוף לעולם)
+
+---
+
 **2. NodePort**
-- פותח Port על כל Node (30000-32767)
-- נגיש מבחוץ דרך `<NodeIP>:<NodePort>`
-- שימוש: Dev/Testing, או כשאין Cloud LB
+
+**מה זה:** פותח Port קבוע על כל Node בקלאסטר. מבחוץ אפשר לגשת דרך `<Node-IP>:<NodePort>`.
+
+**איך עובד:**
+```
+משתמש מבחוץ
+       ↓
+http://192.168.1.100:30080  (IP של Node + NodePort)
+       ↓
+NodePort Service
+       ↓
+Pod (port 8080)
+```
 
 ```yaml
 spec:
@@ -3113,18 +2956,35 @@ spec:
   ports:
   - port: 80
     targetPort: 8080
-    nodePort: 30080  # אופציונלי, אחרת אוטומטי
+    nodePort: 30080  # חייב להיות 30000-32767
 ```
 
-**⚠️ חסרונות NodePort:**
-- צריך לדעת IP של Node
-- Port בטווח מוגבל
-- לא recommended ל-Production
+**מתי להשתמש:** Development, Testing, או כשאין Cloud Load Balancer
+
+**⚠️ חסרונות (למה לא ב-Production):**
+- צריך לדעת את ה-IP של Node ספציפי
+- אם ה-Node נופל - אין גישה
+- Port מוגבל לטווח 30000-32767
+- לא יפה לתת ללקוחות כתובת עם Port מוזר
+
+---
 
 **3. LoadBalancer**
-- יוצר Cloud Load Balancer (ALB/NLB)
-- מקבל External IP
-- שימוש: Production
+
+**מה זה:** יוצר Load Balancer אמיתי בענן (ALB/NLB ב-AWS). מקבל External IP או DNS.
+
+**איך עובד:**
+```
+משתמש מבחוץ
+       ↓
+http://my-lb-12345.us-east-1.elb.amazonaws.com (DNS של LB)
+       ↓
+Cloud Load Balancer (AWS יוצר אוטומטית)
+       ↓
+NodePort (מאחורי הקלעים)
+       ↓
+Pod
+```
 
 ```yaml
 spec:
@@ -3134,16 +2994,38 @@ spec:
     targetPort: 8080
 ```
 
-**4. ExternalName**
-- DNS CNAME record
-- מפנה לשירות חיצוני
-- שימוש: גישה לשירות מחוץ לקלאסטר
+**מתי להשתמש:** Production! זו הדרך הנכונה לחשוף שירות לעולם.
+**יתרונות:** DNS יפה, HA, SSL termination
+**חסרונות:** עלות - כל LoadBalancer עולה כסף
 
+---
+
+**4. ExternalName**
+
+**מה זה:** לא באמת Service - זה DNS CNAME שמצביע לשירות חיצוני.
+
+**איך עובד:**
 ```yaml
 spec:
   type: ExternalName
-  externalName: my.database.example.com
+  externalName: my.database.amazonaws.com
 ```
+
+Pod בקלאסטר יכול לפנות ל-`my-service.default.svc.cluster.local` והוא יופנה ל-`my.database.amazonaws.com`.
+
+**מתי להשתמש:** כשרוצים לגשת לשירות חיצוני (RDS, external API) עם שם פנימי
+**יתרון:** אם מחר ה-Database עובר - משנים רק את ה-Service, לא את כל הקוד"
+
+---
+
+**טבלת סיכום:**
+
+| סוג | נגישות | שימוש | Production? |
+|-----|--------|-------|-------------|
+| **ClusterIP** | רק מתוך הקלאסטר | Internal services | ✅ כן |
+| **NodePort** | Node-IP:30000-32767 | Dev/Test | ❌ לא מומלץ |
+| **LoadBalancer** | External DNS/IP | Public services | ✅ כן |
+| **ExternalName** | DNS redirect | External services | ✅ כן |
 
 ---
 
