@@ -1,0 +1,3979 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>מדריך DevOps מקיף - הכנה לראיון עבודה</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700;900&family=Fira+Code&display=swap');
+        
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --secondary: #10b981;
+            --background: #f8fafc;
+            --surface: #ffffff;
+            --text: #1e293b;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --code-bg: #1e293b;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Heebo', sans-serif;
+            background: var(--background);
+            color: var(--text);
+            line-height: 1.8;
+            font-size: 16px;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        
+        /* Cover Page */
+        .cover {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 100px 40px;
+            text-align: center;
+            margin: -40px -20px 60px -20px;
+            border-radius: 0 0 50px 50px;
+        }
+        
+        .cover h1 {
+            font-size: 3em;
+            font-weight: 900;
+            margin-bottom: 20px;
+        }
+        
+        .cover .subtitle {
+            font-size: 1.5em;
+            opacity: 0.9;
+            margin-bottom: 30px;
+        }
+        
+        .cover .badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
+            padding: 10px 30px;
+            border-radius: 50px;
+            font-weight: 500;
+        }
+        
+        /* Headings */
+        h1 {
+            font-size: 2.5em;
+            color: var(--primary);
+            border-bottom: 4px solid var(--primary);
+            padding-bottom: 15px;
+            margin: 60px 0 30px 0;
+        }
+        
+        h2 {
+            font-size: 1.8em;
+            color: var(--text);
+            margin: 40px 0 20px 0;
+            padding-right: 15px;
+            border-right: 4px solid var(--secondary);
+        }
+        
+        h3 {
+            font-size: 1.3em;
+            color: var(--text);
+            margin: 30px 0 15px 0;
+        }
+        
+        /* Paragraphs */
+        p {
+            margin-bottom: 15px;
+            text-align: justify;
+        }
+        
+        /* Code blocks */
+        pre {
+            background: var(--code-bg);
+            color: #e2e8f0;
+            padding: 25px;
+            border-radius: 12px;
+            overflow-x: auto;
+            margin: 20px 0;
+            font-family: 'Fira Code', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            direction: ltr;
+            text-align: left;
+        }
+        
+        code {
+            font-family: 'Fira Code', monospace;
+            background: #f1f5f9;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            direction: ltr;
+        }
+        
+        pre code {
+            background: none;
+            padding: 0;
+        }
+        
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: var(--surface);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+        }
+        
+        th {
+            background: var(--primary);
+            color: white;
+            padding: 15px;
+            text-align: right;
+            font-weight: 600;
+        }
+        
+        td {
+            padding: 12px 15px;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        tr:last-child td {
+            border-bottom: none;
+        }
+        
+        tr:hover {
+            background: #f8fafc;
+        }
+        
+        /* Interview Questions */
+        .interview-question {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 25px 0;
+            border-right: 5px solid #f59e0b;
+        }
+        
+        .interview-question::before {
+            content: "💡 שאלת ראיון נפוצה";
+            display: block;
+            font-weight: 700;
+            color: #92400e;
+            margin-bottom: 10px;
+        }
+        
+        .interview-question strong {
+            color: #92400e;
+        }
+        
+        /* Answer boxes */
+        .answer {
+            background: #ecfdf5;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 15px 0;
+            border-right: 5px solid var(--secondary);
+        }
+        
+        .answer::before {
+            content: "✅ תשובה טובה";
+            display: block;
+            font-weight: 700;
+            color: #065f46;
+            margin-bottom: 10px;
+        }
+        
+        /* Info boxes */
+        .info-box {
+            background: #eff6ff;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+            border-right: 5px solid var(--primary);
+        }
+        
+        /* Lists */
+        ul, ol {
+            margin: 15px 0;
+            padding-right: 25px;
+        }
+        
+        li {
+            margin-bottom: 8px;
+        }
+        
+        /* Diagrams container */
+        .diagram {
+            background: var(--surface);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 25px 0;
+            overflow-x: auto;
+        }
+        
+        /* Page breaks for PDF */
+        .page-break {
+            page-break-after: always;
+        }
+        
+        /* Print styles */
+        @media print {
+            body {
+                font-size: 12px;
+            }
+            
+            .cover {
+                padding: 60px 30px;
+            }
+            
+            pre {
+                font-size: 11px;
+                padding: 15px;
+            }
+            
+            .page-break {
+                page-break-after: always;
+            }
+        }
+        
+        /* File structure */
+        .file-structure {
+            font-family: 'Fira Code', monospace;
+            background: #f1f5f9;
+            padding: 20px;
+            border-radius: 12px;
+            direction: ltr;
+            text-align: left;
+        }
+        
+        /* TOC */
+        .toc {
+            background: var(--surface);
+            border-radius: 12px;
+            padding: 30px;
+            margin: 30px 0;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+        }
+        
+        .toc h2 {
+            border: none;
+            padding: 0;
+            margin: 0 0 20px 0;
+            text-align: center;
+        }
+        
+        .toc ul {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .toc li {
+            padding: 10px 0;
+            border-bottom: 1px dashed var(--border);
+        }
+        
+        .toc a {
+            color: var(--text);
+            text-decoration: none;
+        }
+        
+        .toc a:hover {
+            color: var(--primary);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Cover Page -->
+        <div class="cover">
+            <h1>📘 מדריך DevOps מקיף</h1>
+            <div class="subtitle">הכנה לראיון עבודה</div>
+            <div class="badge">פרויקט Rick and Morty API - מהקוד ועד לענן</div>
+        </div>
+        
+        <!-- Table of Contents -->
+        <div class="toc">
+            <h2>📑 תוכן עניינים</h2>
+            <ul>
+                <li>פרק 1: הבנת המשימה</li>
+                <li>פרק 2: מה זה API?</li>
+                <li>פרק 3: כתיבת הסקריפט ב-Python</li>
+                <li>פרק 4: מה זה Docker?</li>
+                <li>פרק 5: מה זה Kubernetes?</li>
+                <li>פרק 6: הזרימה המלאה - איך הכל מתחבר</li>
+                <li>פרק 7: שאלות ראיון נפוצות</li>
+                <li>פרק 8: מבנה הפרויקט הסופי</li>
+            </ul>
+        </div>
+        
+        <!-- Introduction -->
+        <h1>מבוא</h1>
+        <p>
+            מדריך זה נכתב עבור מי שמתכונן לראיון עבודה בתחום ה-DevOps.
+            המדריך עוקב אחרי פרויקט אמיתי, צעד אחר צעד, ומסביר כל מושג בצורה פשוטה.
+        </p>
+        
+        <div class="info-box">
+            <strong>מה תלמד במדריך זה:</strong>
+            <ul>
+                <li>מה זה API ואיך עובדים איתו</li>
+                <li>איך כותבים סקריפט ב-Python</li>
+                <li>מה זה Docker ולמה הוא חשוב</li>
+                <li>מה זה Kubernetes ואיך משתמשים בו</li>
+                <li>מושגים שמראיינים אוהבים לשאול עליהם</li>
+            </ul>
+        </div>
+        
+        <div class="page-break"></div>
+        
+        <!-- Chapter 1 -->
+        <h1>פרק 1: הבנת המשימה</h1>
+        
+        <h2>1.1 מה התבקשנו לעשות?</h2>
+        <p>קיבלנו תרגיל בית עם הדרישות הבאות:</p>
+        
+        <h3>משימות חובה:</h3>
+        <ol>
+            <li>לכתוב סקריפט שקורא נתונים מ-API</li>
+            <li>לסנן את הנתונים לפי קריטריונים מסוימים</li>
+            <li>לשמור את התוצאות לקובץ CSV</li>
+            <li>להעלות את הקוד ל-GitHub</li>
+        </ol>
+        
+        <h3>משימות בונוס:</h3>
+        <ol start="5">
+            <li>להפוך את הסקריפט לשירות עם Docker</li>
+            <li>לפרוס את השירות ב-Kubernetes</li>
+            <li>ליצור Helm Chart</li>
+            <li>לבנות CI/CD Pipeline</li>
+        </ol>
+        
+        <h2>1.2 למה דווקא המשימות האלה?</h2>
+        <p>המשימות האלה מייצגות את <strong>מחזור החיים המלא</strong> של אפליקציה:</p>
+        
+        <div class="diagram">
+<pre>
+קוד ← בדיקה ← אריזה ← פריסה ← ניטור
+Code → Test → Package → Deploy → Monitor
+</pre>
+        </div>
+        
+        <div class="interview-question">
+            <strong>"תאר את מחזור החיים של אפליקציה מהפיתוח ועד הפרודקשן"</strong>
+        </div>
+        
+        <div class="answer">
+            "האפליקציה עוברת מספר שלבים: כתיבת קוד, בדיקות אוטומטיות, אריזה לקונטיינר עם Docker, פריסה לסביבת Kubernetes, וניטור מתמשך. כל שלב מנוהל על ידי Pipeline אוטומטי."
+        </div>
+        
+        <div class="page-break"></div>
+        
+        <!-- Chapter 2 -->
+        <h1>פרק 2: מה זה API?</h1>
+        
+        <h2>2.1 הגדרה פשוטה</h2>
+        <p>
+            <strong>API</strong> (Application Programming Interface) = ממשק תכנות יישומים
+        </p>
+        <p>
+            בפשטות: זו הדרך שבה תוכנות מדברות אחת עם השנייה.
+        </p>
+        
+        <div class="info-box">
+            <strong>דוגמה מהחיים:</strong>
+            כשאתה מזמין אוכל דרך אפליקציה, האפליקציה שולחת בקשה ל-API של המסעדה.
+            ה-API מחזיר את התפריט, המחירים, וזמני המשלוח.
+        </div>
+        
+        <h2>2.2 מה זה REST API?</h2>
+        <p><strong>REST</strong> (Representational State Transfer) = סגנון ארכיטקטוני לבניית API</p>
+        
+        <table>
+            <tr>
+                <th>עיקרון</th>
+                <th>הסבר</th>
+            </tr>
+            <tr>
+                <td>Stateless</td>
+                <td>כל בקשה עומדת בפני עצמה</td>
+            </tr>
+            <tr>
+                <td>Client-Server</td>
+                <td>הפרדה בין הלקוח לשרת</td>
+            </tr>
+            <tr>
+                <td>Uniform Interface</td>
+                <td>ממשק אחיד ועקבי</td>
+            </tr>
+            <tr>
+                <td>Cacheable</td>
+                <td>ניתן לשמור תשובות במטמון</td>
+            </tr>
+        </table>
+        
+        <h2>2.3 שיטות HTTP</h2>
+        
+        <div class="interview-question">
+            <strong>"מה ההבדל בין GET ל-POST?"</strong>
+        </div>
+        
+        <table>
+            <tr>
+                <th>Method</th>
+                <th>שימוש</th>
+            </tr>
+            <tr>
+                <td><code>GET</code></td>
+                <td>קבלת מידע (קריאה בלבד)</td>
+            </tr>
+            <tr>
+                <td><code>POST</code></td>
+                <td>יצירת משאב חדש</td>
+            </tr>
+            <tr>
+                <td><code>PUT</code></td>
+                <td>עדכון משאב קיים (מחליף לגמרי)</td>
+            </tr>
+            <tr>
+                <td><code>PATCH</code></td>
+                <td>עדכון חלקי של משאב</td>
+            </tr>
+            <tr>
+                <td><code>DELETE</code></td>
+                <td>מחיקת משאב</td>
+            </tr>
+        </table>
+        
+        <h2>2.4 קודי תגובה HTTP</h2>
+        
+        <div class="interview-question">
+            <strong>"מה המשמעות של קוד 404? ומה 500?"</strong>
+        </div>
+        
+        <table>
+            <tr>
+                <th>קוד</th>
+                <th>משמעות</th>
+            </tr>
+            <tr>
+                <td><code>200</code></td>
+                <td>OK - הבקשה הצליחה</td>
+            </tr>
+            <tr>
+                <td><code>201</code></td>
+                <td>Created - נוצר משאב חדש</td>
+            </tr>
+            <tr>
+                <td><code>400</code></td>
+                <td>Bad Request - בקשה שגויה</td>
+            </tr>
+            <tr>
+                <td><code>401</code></td>
+                <td>Unauthorized - לא מורשה</td>
+            </tr>
+            <tr>
+                <td><code>403</code></td>
+                <td>Forbidden - אסור (גם עם הרשאה)</td>
+            </tr>
+            <tr>
+                <td><code>404</code></td>
+                <td>Not Found - המשאב לא נמצא</td>
+            </tr>
+            <tr>
+                <td><code>500</code></td>
+                <td>Internal Server Error - שגיאת שרת</td>
+            </tr>
+            <tr>
+                <td><code>502</code></td>
+                <td>Bad Gateway - שגיאה בשרת ביניים</td>
+            </tr>
+            <tr>
+                <td><code>503</code></td>
+                <td>Service Unavailable - השירות לא זמין</td>
+            </tr>
+        </table>
+        
+        <h2>2.5 ה-API שעבדנו איתו</h2>
+        <p><strong>כתובת ה-API:</strong> <code>https://rickandmortyapi.com/api/character</code></p>
+        
+        <p><strong>מה מקבלים בתגובה:</strong></p>
+        
+<pre>
+{
+  "info": {
+    "count": 826,
+    "pages": 42,
+    "next": "https://rickandmortyapi.com/api/character?page=2",
+    "prev": null
+  },
+  "results": [
+    {
+      "id": 1,
+      "name": "Rick Sanchez",
+      "status": "Alive",
+      "species": "Human",
+      "origin": {
+        "name": "Earth (C-137)"
+      },
+      "location": {
+        "name": "Citadel of Ricks"
+      },
+      "image": "https://rickandmortyapi.com/api/character/avatar/1.jpeg"
+    }
+  ]
+}
+</pre>
+        
+        <div class="page-break"></div>
+        
+        <!-- Chapter 3 -->
+        <h1>פרק 3: כתיבת הסקריפט ב-Python</h1>
+        
+        <h2>3.1 מה זה Python?</h2>
+        <p>Python היא שפת תכנות פופולרית מאוד בעולם ה-DevOps בגלל:</p>
+        <ul>
+            <li>קלה ללמידה</li>
+            <li>ספריות רבות (libraries)</li>
+            <li>מתאימה לאוטומציה</li>
+            <li>קהילה גדולה</li>
+        </ul>
+        
+        <h2>3.2 מה זה Pagination?</h2>
+        
+        <div class="interview-question">
+            <strong>"איך מטפלים ב-API שמחזיר הרבה נתונים?"</strong>
+        </div>
+        
+        <p><strong>Pagination</strong> = חלוקת נתונים לעמודים</p>
+        
+        <div class="info-box">
+            <strong>למה צריך?</strong>
+            <ul>
+                <li>ה-API שלנו מחזיר 826 דמויות</li>
+                <li>לא הגיוני להחזיר הכל בבקשה אחת</li>
+                <li>לכן ה-API מחזיר 20 דמויות בכל עמוד = 42 עמודים</li>
+            </ul>
+        </div>
+        
+        <div class="diagram">
+<pre>
+בקשה ראשונה:
+GET /character?page=1
+    ↓
+תגובה: 20 דמויות + לינק לעמוד הבא
+    ↓
+בקשה שנייה:
+GET /character?page=2
+    ↓
+תגובה: 20 דמויות + לינק לעמוד הבא
+    ↓
+... וכך הלאה עד עמוד 42
+</pre>
+        </div>
+        
+        <h2>3.3 הקוד שכתבנו - הסבר מלא</h2>
+        <p><strong>קובץ: main.py</strong></p>
+        
+<pre>
+#!/usr/bin/env python3
+"""
+סקריפט לשליפת דמויות מ-Rick and Morty API
+"""
+
+# ייבוא ספריות
+import requests  # לשליחת בקשות HTTP
+import csv       # לכתיבה לקובץ CSV
+
+# כתובת ה-API
+API_BASE_URL = "https://rickandmortyapi.com/api/character"
+
+
+def fetch_all_characters():
+    """
+    שולף את כל הדמויות מה-API.
+    מטפל ב-Pagination אוטומטית.
+    """
+    all_characters = []  # רשימה ריקה לאחסון כל הדמויות
+    url = API_BASE_URL   # מתחילים מהעמוד הראשון
+    
+    while url:  # כל עוד יש עמוד הבא
+        response = requests.get(url)  # שולחים בקשת GET
+        response.raise_for_status()   # אם יש שגיאה - זורקים exception
+        data = response.json()        # ממירים את התגובה ל-JSON
+        
+        all_characters.extend(data['results'])  # מוסיפים את הדמויות
+        url = data['info']['next']  # מעדכנים ל-URL הבא (או None)
+    
+    return all_characters
+
+
+def filter_characters(characters):
+    """
+    מסנן דמויות לפי הקריטריונים:
+    - species = Human
+    - status = Alive
+    - origin = Earth
+    """
+    filtered = []
+    
+    for char in characters:
+        is_human = char['species'] == 'Human'
+        is_alive = char['status'] == 'Alive'
+        is_from_earth = 'Earth' in char['origin']['name']
+        
+        if is_human and is_alive and is_from_earth:
+            filtered.append({
+                'Name': char['name'],
+                'Location': char['location']['name'],
+                'Image': char['image']
+            })
+    
+    return filtered
+
+
+def write_to_csv(characters, filename='output.csv'):
+    """כותב את הדמויות לקובץ CSV."""
+    with open(filename, 'w', newline='', encoding='utf-8') as f:
+        writer = csv.DictWriter(f, fieldnames=['Name', 'Location', 'Image'])
+        writer.writeheader()
+        writer.writerows(characters)
+
+
+def main():
+    """הפונקציה הראשית."""
+    all_characters = fetch_all_characters()
+    filtered = filter_characters(all_characters)
+    write_to_csv(filtered)
+
+
+if __name__ == "__main__":
+    main()
+</pre>
+        
+        <h2>3.4 מושגים חשובים בקוד</h2>
+        
+        <div class="interview-question">
+            <strong>"מה זה <code>if __name__ == "__main__"</code>?"</strong>
+        </div>
+        
+        <div class="answer">
+            זה בודק אם הקובץ רץ ישירות (ולא מיובא כמודול).
+            <ul>
+                <li>אם מריצים <code>python main.py</code> → הקוד ב-if ירוץ</li>
+                <li>אם עושים <code>import main</code> מקובץ אחר → הקוד ב-if לא ירוץ</li>
+            </ul>
+        </div>
+        
+        <div class="interview-question">
+            <strong>"מה ההבדל בין append ל-extend?"</strong>
+        </div>
+        
+<pre>
+# append - מוסיף אלמנט אחד
+list1 = [1, 2, 3]
+list1.append([4, 5])
+# תוצאה: [1, 2, 3, [4, 5]]
+
+# extend - מוסיף את האלמנטים של הרשימה
+list2 = [1, 2, 3]
+list2.extend([4, 5])
+# תוצאה: [1, 2, 3, 4, 5]
+</pre>
+        
+        <div class="page-break"></div>
+        
+        <!-- Chapter 4 -->
+        <h1>פרק 4: מה זה Docker?</h1>
+        
+        <h2>4.1 הבעיה שלפני Docker</h2>
+        
+        <div class="diagram">
+<pre>
+מפתח 1:              מפתח 2:              שרת Production:
+─────────            ─────────            ────────────────
+Python 3.9           Python 3.11          Python 3.8
+Windows              Mac                  Linux
+Flask 2.0            Flask 3.0            Flask 1.0
+
+        "אצלי זה עובד!" - כולם אומרים
+</pre>
+        </div>
+        
+        <h2>4.2 מה Docker פותר?</h2>
+        <p><strong>Docker</strong> יוצר "קופסה" (Container) שבתוכה יש את כל מה שהאפליקציה צריכה.</p>
+        
+        <div class="diagram">
+<pre>
+┌─────────────────────────────────────────────────────────┐
+│                   Docker Container                       │
+│  ┌───────────────────────────────────────────────────┐  │
+│  │  מערכת הפעלה (Linux)                              │  │
+│  │  Python 3.11                                      │  │
+│  │  Flask 3.0                                        │  │
+│  │  הקוד שלנו                                        │  │
+│  └───────────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────┘
+                         │
+     ┌───────────────────┼───────────────────┐
+     ▼                   ▼                   ▼
+ Developer           Developer            Server
+ (Windows)           (Mac)                (Linux)
+
+              עובד אצל כולם!
+</pre>
+        </div>
+        
+        <h2>4.3 מושגי יסוד ב-Docker</h2>
+        
+        <div class="interview-question">
+            <strong>"מה ההבדל בין Image ל-Container?"</strong>
+        </div>
+        
+        <table>
+            <tr>
+                <th>מושג</th>
+                <th>הסבר</th>
+                <th>משל</th>
+            </tr>
+            <tr>
+                <td><strong>Image</strong></td>
+                <td>תבנית לקריאה בלבד</td>
+                <td>מתכון לעוגה</td>
+            </tr>
+            <tr>
+                <td><strong>Container</strong></td>
+                <td>מופע רץ של Image</td>
+                <td>העוגה עצמה</td>
+            </tr>
+            <tr>
+                <td><strong>Dockerfile</strong></td>
+                <td>קובץ הוראות לבניית Image</td>
+                <td>רשימת מצרכים והוראות</td>
+            </tr>
+            <tr>
+                <td><strong>Registry</strong></td>
+                <td>מאגר לאחסון Images</td>
+                <td>חנות מתכונים</td>
+            </tr>
+        </table>
+        
+        <div class="interview-question">
+            <strong>"מה ההבדל בין Container ל-Virtual Machine?"</strong>
+        </div>
+        
+        <div class="diagram">
+<pre>
+Virtual Machine:                    Container:
+────────────────                    ──────────
+
+┌──────────────────┐               ┌──────────────────┐
+│   Application    │               │   Application    │
+├──────────────────┤               ├──────────────────┤
+│   Guest OS       │               │   (No OS!)       │
+│   (Full Linux)   │               │                  │
+├──────────────────┤               ├──────────────────┤
+│   Hypervisor     │               │  Docker Engine   │
+├──────────────────┤               ├──────────────────┤
+│   Host OS        │               │   Host OS        │
+├──────────────────┤               ├──────────────────┤
+│   Hardware       │               │   Hardware       │
+└──────────────────┘               └──────────────────┘
+
+גודל: GB                           גודל: MB
+עלייה: דקות                        עלייה: שניות
+</pre>
+        </div>
+        
+        <h2>4.4 ה-Dockerfile שלנו - שורה אחרי שורה</h2>
+        
+<pre>
+# שורה 1: FROM - מאיזו תמונת בסיס להתחיל?
+FROM python:3.11-slim
+# python:3.11-slim = תמונה רשמית של Python גרסה 3.11
+# slim = גרסה "רזה" - בלי extras מיותרים
+
+# שורה 2: WORKDIR - באיזו תיקייה לעבוד?
+WORKDIR /app
+# יוצר תיקייה /app ועובר אליה
+
+# שורה 3-4: התקנת dependencies
+COPY app/requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+# מתקין את הספריות (Flask, requests)
+
+# שורה 5: העתקת הקוד
+COPY app/ .
+# מעתיק את כל התיקייה app/ לתוך /app
+
+# שורה 6: EXPOSE - איזה פורט האפליקציה מאזינה?
+EXPOSE 5000
+# מסמן שהאפליקציה מאזינה על פורט 5000
+
+# שורה 7: CMD - מה להריץ כשהקונטיינר עולה?
+CMD ["python", "api.py"]
+</pre>
+        
+        <h2>4.5 Docker Layer Caching</h2>
+        
+        <div class="interview-question">
+            <strong>"למה חשוב סדר הפקודות ב-Dockerfile?"</strong>
+        </div>
+        
+        <p>כל שורה ב-Dockerfile יוצרת <strong>Layer</strong> (שכבה). Docker שומר את השכבות במטמון.</p>
+        
+        <div class="diagram">
+<pre>
+Build ראשון:                    Build שני (שינוי בקוד):
+────────────                    ────────────────────────
+
+Layer 1: FROM python      →    Layer 1: FROM python      [CACHED]
+Layer 2: COPY requirements →   Layer 2: COPY requirements [CACHED]
+Layer 3: RUN pip install  →    Layer 3: RUN pip install  [CACHED]
+Layer 4: COPY app/        →    Layer 4: COPY app/        [REBUILD]
+Layer 5: CMD              →    Layer 5: CMD              [REBUILD]
+
+זמן: 60 שניות                   זמן: 5 שניות!
+</pre>
+        </div>
+        
+        <h2>4.6 פקודות Docker חיוניות</h2>
+        
+        <div class="interview-question">
+            <strong>"תראה לי את פקודות Docker הבסיסיות"</strong>
+        </div>
+        
+<pre>
+# בניית Image
+docker build -t rick-morty-api .
+
+# הרצת Container
+docker run -d -p 5000:5000 --name my-api rick-morty-api
+
+# הצגת Containers רצים
+docker ps
+
+# צפייה בלוגים
+docker logs my-api
+docker logs -f my-api    # בזמן אמת
+
+# כניסה לתוך Container
+docker exec -it my-api /bin/bash
+
+# עצירה ומחיקה
+docker stop my-api
+docker rm my-api
+docker rmi rick-morty-api
+</pre>
+        
+        <div class="page-break"></div>
+        
+        <!-- Chapter 5 -->
+        <h1>פרק 5: מה זה Kubernetes?</h1>
+        
+        <h2>5.1 למה צריך Kubernetes?</h2>
+        
+        <div class="info-box">
+            <strong>הבעיה עם Docker בלבד:</strong>
+            <ul>
+                <li>אם Container נופל - אף אחד לא מרים אותו</li>
+                <li>אם יש עומס - אין אפשרות להוסיף עותקים</li>
+                <li>אין חלוקת עומסים (Load Balancing)</li>
+            </ul>
+        </div>
+        
+        <div class="info-box" style="background: #ecfdf5; border-color: var(--secondary);">
+            <strong>מה Kubernetes פותר:</strong>
+            <ul>
+                <li><strong>Self Healing</strong> - אם Pod נופל, קם חדש אוטומטית</li>
+                <li><strong>Scaling</strong> - הוספת/הורדת עותקים לפי עומס</li>
+                <li><strong>Load Balancing</strong> - חלוקת עומסים בין Pods</li>
+                <li><strong>Rolling Updates</strong> - עדכונים בלי downtime</li>
+            </ul>
+        </div>
+        
+        <h2>5.2 מושגי יסוד ב-Kubernetes</h2>
+        
+        <div class="interview-question">
+            <strong>"מה זה Pod?"</strong>
+        </div>
+        
+        <table>
+            <tr>
+                <th>מושג</th>
+                <th>הסבר</th>
+                <th>משל</th>
+            </tr>
+            <tr>
+                <td><strong>Cluster</strong></td>
+                <td>קבוצת שרתים שמנהלים יחד</td>
+                <td>עיר שלמה</td>
+            </tr>
+            <tr>
+                <td><strong>Node</strong></td>
+                <td>שרת בודד בקלאסטר</td>
+                <td>בניין בעיר</td>
+            </tr>
+            <tr>
+                <td><strong>Pod</strong></td>
+                <td>יחידת ההרצה הקטנה ביותר</td>
+                <td>דירה בבניין</td>
+            </tr>
+            <tr>
+                <td><strong>Deployment</strong></td>
+                <td>מגדיר איך להריץ Pods</td>
+                <td>חוזה שכירות</td>
+            </tr>
+            <tr>
+                <td><strong>Service</strong></td>
+                <td>חושף Pods לתקשורת</td>
+                <td>דלפק קבלה</td>
+            </tr>
+            <tr>
+                <td><strong>Ingress</strong></td>
+                <td>חושף שירותים החוצה</td>
+                <td>כתובת הבניין</td>
+            </tr>
+        </table>
+        
+        <h2>5.3 הקבצים שיצרנו</h2>
+        
+        <div class="diagram">
+<pre>
+deployment.yaml ──▶ service.yaml ──▶ ingress.yaml
+
+     "מה"              "איך"           "איפה"
+     להריץ             להגיע           לחשוף
+</pre>
+        </div>
+        
+        <h2>5.4 Probes - בדיקות בריאות</h2>
+        
+        <div class="interview-question">
+            <strong>"מה ההבדל בין Liveness Probe ל-Readiness Probe?"</strong>
+        </div>
+        
+        <table>
+            <tr>
+                <th>Probe</th>
+                <th>מטרה</th>
+                <th>מה קורה אם נכשל</th>
+            </tr>
+            <tr>
+                <td><strong>Liveness</strong></td>
+                <td>לבדוק אם האפליקציה חיה</td>
+                <td>Restart ל-Container</td>
+            </tr>
+            <tr>
+                <td><strong>Readiness</strong></td>
+                <td>לבדוק אם האפליקציה מוכנה</td>
+                <td>לא שולחים traffic</td>
+            </tr>
+        </table>
+        
+        <h2>5.5 סוגי Service</h2>
+        
+        <div class="interview-question">
+            <strong>"מה ההבדל בין סוגי Service?"</strong>
+        </div>
+        
+        <table>
+            <tr>
+                <th>סוג</th>
+                <th>נגישות</th>
+                <th>שימוש</th>
+            </tr>
+            <tr>
+                <td><strong>ClusterIP</strong></td>
+                <td>רק מתוך הקלאסטר</td>
+                <td>שירותים פנימיים</td>
+            </tr>
+            <tr>
+                <td><strong>NodePort</strong></td>
+                <td>דרך פורט על כל Node</td>
+                <td>פיתוח ובדיקות</td>
+            </tr>
+            <tr>
+                <td><strong>LoadBalancer</strong></td>
+                <td>דרך Load Balancer חיצוני</td>
+                <td>פרודקשן בענן</td>
+            </tr>
+        </table>
+        
+        <h2>5.6 פקודות kubectl חיוניות</h2>
+        
+        <div class="interview-question">
+            <strong>"איך בודקים מצב של Pods בקלאסטר?"</strong>
+        </div>
+        
+<pre>
+# הצגת משאבים
+kubectl get pods              # הצג את כל ה-Pods
+kubectl get pods -o wide      # עם מידע נוסף
+kubectl get services          # הצג Services
+kubectl get all               # הצג הכל
+
+# יישום קבצי YAML
+kubectl apply -f deployment.yaml
+kubectl apply -f yamls/       # כל הקבצים בתיקייה
+
+# מידע מפורט
+kubectl describe pod pod-name
+kubectl logs pod-name
+kubectl logs -f pod-name      # בזמן אמת
+
+# ניפוי באגים
+kubectl exec -it pod-name -- /bin/bash
+kubectl port-forward svc/my-service 8080:80
+
+# מחיקה
+kubectl delete -f deployment.yaml
+kubectl delete pod pod-name
+</pre>
+        
+        <div class="page-break"></div>
+        
+        <!-- Chapter 6 -->
+        <h1>פרק 6: הזרימה המלאה</h1>
+        
+        <h2>6.1 איך הכל מתחבר</h2>
+        
+        <div class="diagram">
+<pre>
+                    משתמש מהאינטרנט
+                          │
+                          │ HTTP Request
+                          ▼
+┌──────────────────────────────────────────────────────────────────┐
+│                     Kubernetes Cluster                           │
+│                                                                  │
+│   ┌──────────────────────────────────────────────────────────┐  │
+│   │                      INGRESS                              │  │
+│   │         בודק host ו-path, מעביר ל-Service               │  │
+│   └────────────────────────────┬─────────────────────────────┘  │
+│                                │                                 │
+│   ┌────────────────────────────┼─────────────────────────────┐  │
+│   │                      SERVICE                              │  │
+│   │              Load Balance בין Pods                        │  │
+│   └──────────────┬─────────────┴─────────────┬───────────────┘  │
+│                  │                           │                   │
+│          ┌───────┴───────┐           ┌───────┴───────┐          │
+│          │     POD 1     │           │     POD 2     │          │
+│          │  Container    │           │  Container    │          │
+│          │   api.py      │           │   api.py      │          │
+│          └───────────────┘           └───────────────┘          │
+│                                                                  │
+│                        DEPLOYMENT                                │
+│                   (מנהל את ה-Pods)                               │
+│                                                                  │
+└──────────────────────────────────────────────────────────────────┘
+                          │
+                          ▼
+               Rick and Morty API
+</pre>
+        </div>
+        
+        <h2>6.2 סדר הפעולות</h2>
+        <ol>
+            <li><strong>Ingress</strong> - מקבל בקשה ל-<code>rick-morty.local/characters</code></li>
+            <li><strong>Service</strong> - מחלק עומסים בין ה-Pods</li>
+            <li><strong>Pod</strong> - Flask מטפל בבקשה, קורא מה-API החיצוני</li>
+            <li><strong>חזרה</strong> - JSON חוזר דרך אותו נתיב</li>
+        </ol>
+        
+        <div class="page-break"></div>
+        
+        <!-- Chapter 7 -->
+        <h1>פרק 7: שאלות ראיון נפוצות - סיכום</h1>
+        
+        <h2>7.1 שאלות על API</h2>
+        <table>
+            <tr>
+                <th>שאלה</th>
+                <th>תשובה</th>
+            </tr>
+            <tr>
+                <td>מה זה REST API?</td>
+                <td>ארכיטקטורה לתקשורת בין מערכות המבוססת על HTTP</td>
+            </tr>
+            <tr>
+                <td>מה ההבדל בין GET ל-POST?</td>
+                <td>GET לקריאה, POST ליצירה</td>
+            </tr>
+            <tr>
+                <td>מה זה Status Code 500?</td>
+                <td>שגיאה בצד השרת</td>
+            </tr>
+            <tr>
+                <td>איך מטפלים ב-Pagination?</td>
+                <td>קוראים עמוד-עמוד עד שאין next</td>
+            </tr>
+        </table>
+        
+        <h2>7.2 שאלות על Docker</h2>
+        <table>
+            <tr>
+                <th>שאלה</th>
+                <th>תשובה</th>
+            </tr>
+            <tr>
+                <td>מה ההבדל בין Image ל-Container?</td>
+                <td>Image = תבנית, Container = מופע רץ</td>
+            </tr>
+            <tr>
+                <td>למה Docker ולא VM?</td>
+                <td>יותר קל, מהיר, וצורך פחות משאבים</td>
+            </tr>
+            <tr>
+                <td>מה עושה EXPOSE?</td>
+                <td>מתעד איזה פורט האפליקציה מאזינה</td>
+            </tr>
+            <tr>
+                <td>מה ההבדל בין CMD ל-ENTRYPOINT?</td>
+                <td>CMD ניתן לדריסה, ENTRYPOINT קבוע</td>
+            </tr>
+        </table>
+        
+        <h2>7.3 שאלות על Kubernetes</h2>
+        <table>
+            <tr>
+                <th>שאלה</th>
+                <th>תשובה</th>
+            </tr>
+            <tr>
+                <td>מה זה Pod?</td>
+                <td>יחידת ההרצה הקטנה ביותר</td>
+            </tr>
+            <tr>
+                <td>מה ההבדל בין Deployment ל-Pod?</td>
+                <td>Deployment מנהל Pods (replicas, updates)</td>
+            </tr>
+            <tr>
+                <td>מתי משתמשים ב-ClusterIP?</td>
+                <td>לשירותים פנימיים בלבד</td>
+            </tr>
+            <tr>
+                <td>מה עושה Liveness Probe?</td>
+                <td>בודק אם האפליקציה חיה. אם לא - restart</td>
+            </tr>
+        </table>
+        
+        <div class="page-break"></div>
+        
+        <!-- Chapter 8 -->
+        <h1>פרק 8: מבנה הפרויקט הסופי</h1>
+        
+        <div class="file-structure">
+<pre>
+rick-morty-devops/
+│
+├── app/                          # קוד האפליקציה
+│   ├── main.py                   # סקריפט שמייצר CSV
+│   ├── api.py                    # שרת REST API
+│   ├── requirements.txt          # ספריות Python
+│   └── output.csv                # קובץ הפלט
+│
+├── yamls/                        # קבצי Kubernetes
+│   ├── deployment.yaml           # הגדרת הפריסה
+│   ├── service.yaml              # הגדרת השירות
+│   └── ingress.yaml              # הגדרת הכניסה
+│
+├── Dockerfile                    # הוראות Docker
+├── .gitignore                    # קבצים להתעלמות
+└── README.md                     # תיעוד הפרויקט
+</pre>
+        </div>
+        
+        <!-- Mindmap Chapter -->
+        <h1>פרק 9: מפת הקשרים - איך הכל מתחבר</h1>
+        
+        <h2>9.1 המפה הגדולה - כל הפרויקט במבט אחד</h2>
+        
+        <div class="diagram" style="background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);">
+<pre style="background: transparent; color: #1e293b; font-size: 12px;">
+┌─────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                                     │
+│                              🗺️ MINDMAP - מפת הפרויקט המלאה                                        │
+│                                                                                                     │
+├─────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                                     │
+│                                    ┌─────────────────────┐                                          │
+│                                    │   🎯 המשימה שלנו   │                                          │
+│                                    │  Rick & Morty API   │                                          │
+│                                    └──────────┬──────────┘                                          │
+│                                               │                                                     │
+│                    ┌──────────────────────────┼──────────────────────────┐                          │
+│                    │                          │                          │                          │
+│                    ▼                          ▼                          ▼                          │
+│         ┌─────────────────┐       ┌─────────────────┐       ┌─────────────────┐                    │
+│         │  📊 DATA        │       │  🔧 CODE        │       │  🚀 DEPLOY      │                    │
+│         │  מאיפה המידע?   │       │  איך מעבדים?    │       │  איך מריצים?    │                    │
+│         └────────┬────────┘       └────────┬────────┘       └────────┬────────┘                    │
+│                  │                         │                         │                              │
+│                  ▼                         ▼                         ▼                              │
+│    ┌─────────────────────────┐  ┌─────────────────────────┐  ┌─────────────────────────┐           │
+│    │ rickandmortyapi.com     │  │ Python Scripts          │  │ Docker + Kubernetes     │           │
+│    │ └─▶ 826 דמויות         │  │ └─▶ main.py (CSV)       │  │ └─▶ Container           │           │
+│    │ └─▶ 42 עמודים          │  │ └─▶ api.py (REST)       │  │ └─▶ Pods                │           │
+│    │ └─▶ JSON format        │  │ └─▶ סינון + עיבוד       │  │ └─▶ Services            │           │
+│    └─────────────────────────┘  └─────────────────────────┘  └─────────────────────────┘           │
+│                                                                                                     │
+└─────────────────────────────────────────────────────────────────────────────────────────────────────┘
+</pre>
+        </div>
+        
+        <h2>9.2 זרימת הנתונים - מה קורה לכל בקשה?</h2>
+        
+        <div class="diagram" style="background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);">
+<pre style="background: transparent; color: #1e293b; font-size: 11px;">
+┌─────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                                     │
+│                              📡 DATA FLOW - זרימת הנתונים                                           │
+│                                                                                                     │
+├─────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                                     │
+│   ┌──────────┐                                                                                      │
+│   │ 👤 USER  │                                                                                      │
+│   └────┬─────┘                                                                                      │
+│        │ 1. HTTP Request: GET /characters                                                          │
+│        ▼                                                                                           │
+│   ┌──────────────────────────────────────────────────────────────────────────────────────────┐     │
+│   │                                  KUBERNETES CLUSTER                                       │     │
+│   │                                                                                          │     │
+│   │   ┌────────────────────────────────────────────────────────────────────────────────┐    │     │
+│   │   │  INGRESS                                                                        │    │     │
+│   │   │  • בודק: host = rick-morty.local ✓                                             │    │     │
+│   │   │  • בודק: path = /characters ✓                                                  │    │     │
+│   │   │  • מעביר ל: rick-morty-api-service:80                                          │    │     │
+│   │   └───────────────────────────────────────────┬────────────────────────────────────┘    │     │
+│   │                                               │ 2. Route to Service                     │     │
+│   │                                               ▼                                         │     │
+│   │   ┌────────────────────────────────────────────────────────────────────────────────┐    │     │
+│   │   │  SERVICE (Load Balancer)                                                        │    │     │
+│   │   │  • מוצא Pods עם label: app=rick-morty-api                                      │    │     │
+│   │   │  • בוחר Pod (Round Robin)                                                       │    │     │
+│   │   │  • ממיר port: 80 → 5000                                                        │    │     │
+│   │   └───────────────────────────────────────────┬────────────────────────────────────┘    │     │
+│   │                                               │ 3. Forward to Pod                       │     │
+│   │                    ┌──────────────────────────┴──────────────────────────┐              │     │
+│   │                    ▼                                                     ▼              │     │
+│   │   ┌────────────────────────────────┐            ┌────────────────────────────────┐     │     │
+│   │   │  POD 1                         │            │  POD 2                         │     │     │
+│   │   │  ┌──────────────────────────┐  │            │  ┌──────────────────────────┐  │     │     │
+│   │   │  │  CONTAINER               │  │            │  │  CONTAINER               │  │     │     │
+│   │   │  │  • Flask מקבל בקשה       │  │            │  │  • Flask מקבל בקשה       │  │     │     │
+│   │   │  │  • מזהה route /characters │  │            │  │  • מזהה route /characters │  │     │     │
+│   │   │  │  • קורא לפונקציה          │  │            │  │  • קורא לפונקציה          │  │     │     │
+│   │   │  └──────────────────────────┘  │            │  └──────────────────────────┘  │     │     │
+│   │   └────────────────────────────────┘            └────────────────────────────────┘     │     │
+│   │                    │ 4. Fetch from External API                                         │     │
+│   │                    ▼                                                                    │     │
+│   └──────────────────────────────────────────────────────────────────────────────────────────┘     │
+│                        │                                                                           │
+│                        ▼                                                                           │
+│   ┌──────────────────────────────────────────────────────────────────────────────────────────┐     │
+│   │                           RICK & MORTY API (External)                                    │     │
+│   │                                                                                          │     │
+│   │   Page 1 ──▶ Page 2 ──▶ Page 3 ──▶ ... ──▶ Page 42                                      │     │
+│   │      │          │          │                   │                                         │     │
+│   │      ▼          ▼          ▼                   ▼                                         │     │
+│   │   20 chars   20 chars   20 chars            20 chars  = 826 Total                       │     │
+│   │                                                                                          │     │
+│   └──────────────────────────────────────────────────────────────────────────────────────────┘     │
+│                        │ 5. Return JSON                                                            │
+│                        ▼                                                                           │
+│   ┌──────────────────────────────────────────────────────────────────────────────────────────┐     │
+│   │                              FILTER LOGIC (בתוך ה-Pod)                                   │     │
+│   │                                                                                          │     │
+│   │   826 Characters ──▶ Filter ──▶ 109 Characters                                          │     │
+│   │                         │                                                               │     │
+│   │            ┌────────────┼────────────┐                                                  │     │
+│   │            │            │            │                                                  │     │
+│   │       species==    status==     origin                                                  │     │
+│   │       "Human"      "Alive"    contains                                                  │     │
+│   │                              "Earth"                                                    │     │
+│   │                                                                                          │     │
+│   └──────────────────────────────────────────────────────────────────────────────────────────┘     │
+│                        │ 6. Return filtered JSON                                                   │
+│                        ▼                                                                           │
+│   ┌──────────┐                                                                                      │
+│   │ 👤 USER  │  ◀── {"count": 109, "characters": [...]}                                            │
+│   └──────────┘                                                                                      │
+│                                                                                                     │
+└─────────────────────────────────────────────────────────────────────────────────────────────────────┘
+</pre>
+        </div>
+        
+        <h2>9.3 מפת הקבצים - מי תלוי במי?</h2>
+        
+        <div class="diagram" style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);">
+<pre style="background: transparent; color: #1e293b; font-size: 11px;">
+┌─────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                                     │
+│                              📁 FILE DEPENDENCIES - תלויות בין קבצים                               │
+│                                                                                                     │
+├─────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                                     │
+│                                    ┌─────────────────────┐                                          │
+│                                    │   requirements.txt  │                                          │
+│                                    │   ┌─────────────┐   │                                          │
+│                                    │   │ requests    │   │                                          │
+│                                    │   │ flask       │   │                                          │
+│                                    │   └─────────────┘   │                                          │
+│                                    └──────────┬──────────┘                                          │
+│                                               │ pip install                                         │
+│                       ┌───────────────────────┴───────────────────────┐                             │
+│                       │                                               │                             │
+│                       ▼                                               ▼                             │
+│            ┌─────────────────────┐                         ┌─────────────────────┐                  │
+│            │      main.py        │                         │       api.py        │                  │
+│            │   ┌─────────────┐   │                         │   ┌─────────────┐   │                  │
+│            │   │ import      │   │                         │   │ import      │   │                  │
+│            │   │ requests    │   │                         │   │ requests    │   │                  │
+│            │   │ csv         │   │                         │   │ flask       │   │                  │
+│            │   └─────────────┘   │                         │   └─────────────┘   │                  │
+│            │                     │                         │                     │                  │
+│            │ OUTPUT:             │                         │ ENDPOINTS:          │                  │
+│            │ └─▶ output.csv      │                         │ └─▶ /characters     │                  │
+│            │                     │                         │ └─▶ /healthcheck    │                  │
+│            └─────────────────────┘                         └──────────┬──────────┘                  │
+│                                                                       │                             │
+│                                                                       │ RUNS                        │
+│                                                                       ▼                             │
+│                                                            ┌─────────────────────┐                  │
+│                                                            │     Dockerfile      │                  │
+│                                                            │   ┌─────────────┐   │                  │
+│                                                            │   │ FROM python │   │                  │
+│                                                            │   │ COPY app/   │   │                  │
+│                                                            │   │ CMD api.py  │───┼─── uses api.py   │
+│                                                            │   └─────────────┘   │                  │
+│                                                            └──────────┬──────────┘                  │
+│                                                                       │                             │
+│                                                                       │ docker build                │
+│                                                                       ▼                             │
+│                                                            ┌─────────────────────┐                  │
+│                                                            │   Docker Image      │                  │
+│                                                            │  rick-morty-api     │                  │
+│                                                            └──────────┬──────────┘                  │
+│                                                                       │                             │
+│                                                                       │ referenced by               │
+│                                        ┌──────────────────────────────┴──────────────────────────┐  │
+│                                        │                              │                          │  │
+│                                        ▼                              ▼                          ▼  │
+│                             ┌─────────────────────┐       ┌─────────────────────┐   ┌──────────────┐│
+│                             │  deployment.yaml    │       │   service.yaml      │   │ingress.yaml ││
+│                             │ ┌─────────────────┐ │       │ ┌─────────────────┐ │   │┌────────────┐││
+│                             │ │ image:          │ │       │ │ selector:       │ │   ││ backend:   │││
+│                             │ │ rick-morty-api  │◀┼───────│ │ app: rick-morty │◀┼───││ service:   │││
+│                             │ │                 │ │       │ │                 │ │   ││ rick-morty │││
+│                             │ │ labels:         │ │       │ └─────────────────┘ │   │└────────────┘││
+│                             │ │ app: rick-morty │─┼───────▶ matches labels      │   └──────────────┘│
+│                             │ └─────────────────┘ │       └─────────────────────┘                   │
+│                             │                     │                                                 │
+│                             │ healthcheck:        │                                                 │
+│                             │ └─▶ /healthcheck ◀──┼─── calls api.py endpoint                       │
+│                             └─────────────────────┘                                                 │
+│                                                                                                     │
+└─────────────────────────────────────────────────────────────────────────────────────────────────────┘
+</pre>
+        </div>
+        
+        <h2>9.4 מפת הטכנולוגיות - מה משתמש במה?</h2>
+        
+        <div class="diagram" style="background: linear-gradient(135deg, #fce7f3 0%, #fbcfe8 100%);">
+<pre style="background: transparent; color: #1e293b; font-size: 11px;">
+┌─────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                                     │
+│                              🔧 TECHNOLOGY STACK - ערימת הטכנולוגיות                               │
+│                                                                                                     │
+├─────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                                     │
+│   LAYER 1: CODE                    LAYER 2: RUNTIME                LAYER 3: ORCHESTRATION          │
+│   ────────────────                 ─────────────────               ────────────────────             │
+│                                                                                                     │
+│   ┌─────────────────┐             ┌─────────────────┐             ┌─────────────────┐              │
+│   │    PYTHON       │             │     DOCKER      │             │   KUBERNETES    │              │
+│   │   ┌─────────┐   │             │   ┌─────────┐   │             │   ┌─────────┐   │              │
+│   │   │ Flask   │───┼────────────▶│   │Container│───┼────────────▶│   │   Pod   │   │              │
+│   │   └─────────┘   │  packages   │   └─────────┘   │   runs in   │   └─────────┘   │              │
+│   │   ┌─────────┐   │  into       │   ┌─────────┐   │             │   ┌─────────┐   │              │
+│   │   │requests │   │             │   │  Image  │   │             │   │ Service │   │              │
+│   │   └─────────┘   │             │   └─────────┘   │             │   └─────────┘   │              │
+│   │   ┌─────────┐   │             │   ┌─────────┐   │             │   ┌─────────┐   │              │
+│   │   │   csv   │   │             │   │  Port   │   │             │   │ Ingress │   │              │
+│   │   └─────────┘   │             │   │  5000   │   │             │   └─────────┘   │              │
+│   └─────────────────┘             └─────────────────┘             └─────────────────┘              │
+│           │                               │                               │                        │
+│           │                               │                               │                        │
+│           ▼                               ▼                               ▼                        │
+│   ┌─────────────────────────────────────────────────────────────────────────────────────────┐     │
+│   │                                    CONNECTIONS                                           │     │
+│   ├─────────────────────────────────────────────────────────────────────────────────────────┤     │
+│   │                                                                                          │     │
+│   │   Python ──────────────────────────────────────────────────────────────▶ External API   │     │
+│   │      │                                                                    (rickandmorty)│     │
+│   │      │ requests.get()                                                                   │     │
+│   │      │                                                                                   │     │
+│   │      ▼                                                                                   │     │
+│   │   Flask ────────────────────────────────────────────────────────────────▶ HTTP :5000    │     │
+│   │      │                                                                                   │     │
+│   │      │ app.run(port=5000)                                                               │     │
+│   │      │                                                                                   │     │
+│   │      ▼                                                                                   │     │
+│   │   Docker ───────────────────────────────────────────────────────────────▶ Expose 5000   │     │
+│   │      │                                                                                   │     │
+│   │      │ EXPOSE 5000, CMD python api.py                                                   │     │
+│   │      │                                                                                   │     │
+│   │      ▼                                                                                   │     │
+│   │   K8s Pod ──────────────────────────────────────────────────────────────▶ Container     │     │
+│   │      │                                                                    Port 5000     │     │
+│   │      │ containerPort: 5000                                                              │     │
+│   │      │                                                                                   │     │
+│   │      ▼                                                                                   │     │
+│   │   K8s Service ──────────────────────────────────────────────────────────▶ Port 80       │     │
+│   │      │                                                                    → 5000        │     │
+│   │      │ port: 80, targetPort: 5000                                                       │     │
+│   │      │                                                                                   │     │
+│   │      ▼                                                                                   │     │
+│   │   K8s Ingress ──────────────────────────────────────────────────────────▶ Domain        │     │
+│   │                                                                           rick-morty    │     │
+│   │      host: rick-morty.local                                               .local        │     │
+│   │                                                                                          │     │
+│   └─────────────────────────────────────────────────────────────────────────────────────────┘     │
+│                                                                                                     │
+└─────────────────────────────────────────────────────────────────────────────────────────────────────┘
+</pre>
+        </div>
+        
+        <h2>9.5 מפת המושגים - DevOps Concepts</h2>
+        
+        <div class="diagram" style="background: linear-gradient(135deg, #ede9fe 0%, #ddd6fe 100%);">
+<pre style="background: transparent; color: #1e293b; font-size: 11px;">
+┌─────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                                     │
+│                              💡 CONCEPTS MAP - מפת המושגים                                         │
+│                                                                                                     │
+├─────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                                     │
+│                                      ┌─────────────────┐                                            │
+│                                      │     DevOps      │                                            │
+│                                      │   End-to-End    │                                            │
+│                                      └────────┬────────┘                                            │
+│                                               │                                                     │
+│           ┌───────────────┬───────────────┬───┴───┬───────────────┬───────────────┐                │
+│           │               │               │       │               │               │                │
+│           ▼               ▼               ▼       ▼               ▼               ▼                │
+│   ┌───────────────┐ ┌───────────────┐ ┌───────────────┐ ┌───────────────┐ ┌───────────────┐        │
+│   │     CODE      │ │     BUILD     │ │    PACKAGE    │ │    DEPLOY     │ │    MONITOR    │        │
+│   └───────┬───────┘ └───────┬───────┘ └───────┬───────┘ └───────┬───────┘ └───────┬───────┘        │
+│           │                 │                 │                 │                 │                │
+│           ▼                 ▼                 ▼                 ▼                 ▼                │
+│   ┌───────────────┐ ┌───────────────┐ ┌───────────────┐ ┌───────────────┐ ┌───────────────┐        │
+│   │ • Python      │ │ • pip install │ │ • Dockerfile  │ │ • kubectl     │ │ • Healthcheck │        │
+│   │ • Flask       │ │ • Tests       │ │ • docker build│ │ • Deployment  │ │ • Probes      │        │
+│   │ • REST API    │ │ • Linting     │ │ • Image       │ │ • Service     │ │ • Logs        │        │
+│   │ • JSON        │ │               │ │ • Registry    │ │ • Ingress     │ │               │        │
+│   └───────────────┘ └───────────────┘ └───────────────┘ └───────────────┘ └───────────────┘        │
+│           │                 │                 │                 │                 │                │
+│           │                 │                 │                 │                 │                │
+│           │    בפרויקט      │    בפרויקט      │    בפרויקט      │    בפרויקט      │    בפרויקט     │
+│           │    שלנו:        │    שלנו:        │    שלנו:        │    שלנו:        │    שלנו:       │
+│           ▼                 ▼                 ▼                 ▼                 ▼                │
+│   ┌───────────────┐ ┌───────────────┐ ┌───────────────┐ ┌───────────────┐ ┌───────────────┐        │
+│   │               │ │               │ │               │ │               │ │               │        │
+│   │  main.py      │ │ requirements  │ │  Dockerfile   │ │  yamls/       │ │ /healthcheck  │        │
+│   │  api.py       │ │ .txt          │ │               │ │  ├ deploy     │ │  endpoint     │        │
+│   │               │ │               │ │               │ │  ├ service    │ │               │        │
+│   │               │ │               │ │               │ │  └ ingress    │ │ livenessProbe │        │
+│   │               │ │               │ │               │ │               │ │ readinessProbe│        │
+│   │               │ │               │ │               │ │               │ │               │        │
+│   └───────────────┘ └───────────────┘ └───────────────┘ └───────────────┘ └───────────────┘        │
+│                                                                                                     │
+│   ════════════════════════════════════════════════════════════════════════════════════════════     │
+│                                                                                                     │
+│                                    KEY RELATIONSHIPS                                                │
+│                                    ────────────────────                                             │
+│                                                                                                     │
+│   ┌─────────────────────────────────────────────────────────────────────────────────────────┐      │
+│   │                                                                                          │      │
+│   │  1. api.py ────────── defines ──────────▶ /healthcheck endpoint                         │      │
+│   │                                                   │                                      │      │
+│   │  2. Dockerfile ────── runs ─────────────▶ api.py │                                      │      │
+│   │                                                   │                                      │      │
+│   │  3. deployment.yaml ── uses ────────────▶ Docker Image                                  │      │
+│   │         │                                         │                                      │      │
+│   │         └──────────── calls ────────────▶ /healthcheck (liveness/readiness)             │      │
+│   │                                                                                          │      │
+│   │  4. service.yaml ───── finds ───────────▶ Pods by label (app: rick-morty-api)           │      │
+│   │                                                                                          │      │
+│   │  5. ingress.yaml ───── routes to ───────▶ Service                                       │      │
+│   │                                                                                          │      │
+│   └─────────────────────────────────────────────────────────────────────────────────────────┘      │
+│                                                                                                     │
+└─────────────────────────────────────────────────────────────────────────────────────────────────────┘
+</pre>
+        </div>
+        
+        <h2>9.6 סיכום הקשרים - One Page View</h2>
+        
+        <div class="diagram" style="background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%); border: 3px solid #10b981;">
+<pre style="background: transparent; color: #1e293b; font-size: 11px;">
+┌─────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                                     │
+│                         🎯 ONE PAGE SUMMARY - כל הקשרים בעמוד אחד                                  │
+│                                                                                                     │
+├─────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                                     │
+│   ┌─────────────┐         ┌─────────────┐         ┌─────────────┐         ┌─────────────┐          │
+│   │ EXTERNAL    │         │    CODE     │         │   DOCKER    │         │ KUBERNETES  │          │
+│   │    API      │         │             │         │             │         │             │          │
+│   └──────┬──────┘         └──────┬──────┘         └──────┬──────┘         └──────┬──────┘          │
+│          │                       │                       │                       │                  │
+│          │                       │                       │                       │                  │
+│   rickandmorty           main.py │ api.py        Dockerfile              deployment.yaml           │
+│   api.com                   │         │                 │                service.yaml              │
+│      │                      │         │                 │                ingress.yaml              │
+│      │                      ▼         ▼                 ▼                       │                  │
+│      │               ┌─────────────────────┐    ┌─────────────┐                 │                  │
+│      │               │   Python Code       │    │   Docker    │                 │                  │
+│      │               │   • Fetch API       │───▶│   Image     │─────────────────┤                  │
+│      │               │   • Filter data     │    │             │                 │                  │
+│      │               │   • Return JSON     │    └─────────────┘                 │                  │
+│      │               └─────────────────────┘           │                        │                  │
+│      │                        │                        │                        │                  │
+│      │                        │ defines                │ packages               │ deploys          │
+│      │                        ▼                        ▼                        ▼                  │
+│      │               ┌─────────────┐           ┌─────────────┐          ┌─────────────┐           │
+│      │               │ /characters │           │  Container  │          │    Pods     │           │
+│      │               │ /healthcheck│           │   :5000     │          │  (2 replicas)│           │
+│      │               └─────────────┘           └─────────────┘          └──────┬──────┘           │
+│      │                        │                                                │                   │
+│      │                        │                                                │                   │
+│      │                        │ called by                              exposed by                  │
+│      │                        │                                                │                   │
+│      │                        ▼                                                ▼                   │
+│      │               ┌─────────────────────────────────────────────────────────────┐              │
+│      │               │                    Kubernetes Probes                        │              │
+│      │               │                                                             │              │
+│      │               │   livenessProbe ──────▶ GET /healthcheck ──▶ אם נכשל: restart│              │
+│      │               │   readinessProbe ─────▶ GET /healthcheck ──▶ אם נכשל: no traffic           │
+│      │               │                                                             │              │
+│      │               └─────────────────────────────────────────────────────────────┘              │
+│      │                                                                                             │
+│      │                                                                                             │
+│      │   ◀──────────────────── HTTP calls ────────────────────────────────────────────────────    │
+│      │                                                                                    │        │
+│      ▼                                                                                    │        │
+│   ┌─────────────────────────────────────────────────────────────────────────────────────┐│        │
+│   │                                                                                      ││        │
+│   │   Rick & Morty API                                                                  ││        │
+│   │   └─▶ /api/character?page=1,2,3...42                                               ││        │
+│   │   └─▶ Returns 826 characters                                                        │◀────────┘
+│   │   └─▶ Filtered to 109 (Human + Alive + Earth)                                       │          │
+│   │                                                                                      │          │
+│   └─────────────────────────────────────────────────────────────────────────────────────┘          │
+│                                                                                                     │
+│   ═══════════════════════════════════════════════════════════════════════════════════════════════  │
+│                                                                                                     │
+│   SUMMARY OF CONNECTIONS:                                                                          │
+│   ──────────────────────                                                                           │
+│                                                                                                     │
+│   1. requirements.txt ──▶ pip install ──▶ Python can import flask, requests                       │
+│   2. main.py/api.py   ──▶ uses requests ──▶ calls rickandmortyapi.com                             │
+│   3. api.py           ──▶ creates Flask app ──▶ listens on port 5000                              │
+│   4. Dockerfile       ──▶ COPY app/ + CMD api.py ──▶ creates runnable image                       │
+│   5. deployment.yaml  ──▶ image: rick-morty-api ──▶ creates Pods from image                       │
+│   6. deployment.yaml  ──▶ labels: app: rick-morty-api ──▶ identifies Pods                         │
+│   7. service.yaml     ──▶ selector: app: rick-morty-api ──▶ finds Pods by label                   │
+│   8. service.yaml     ──▶ port: 80, targetPort: 5000 ──▶ routes traffic to containers             │
+│   9. ingress.yaml     ──▶ backend: service ──▶ routes external traffic to service                 │
+│   10. probes          ──▶ httpGet: /healthcheck ──▶ verifies app is healthy                       │
+│                                                                                                     │
+└─────────────────────────────────────────────────────────────────────────────────────────────────────┘
+</pre>
+        </div>
+        
+        <div class="page-break"></div>
+        
+        <!-- Summary -->
+        <h1>סיכום</h1>
+        
+        <div class="info-box">
+            <strong>מה למדנו:</strong>
+            <ol>
+                <li><strong>API</strong> - איך לקרוא נתונים משירות חיצוני</li>
+                <li><strong>Python</strong> - איך לכתוב סקריפט שמעבד נתונים</li>
+                <li><strong>Docker</strong> - איך לארוז אפליקציה לקונטיינר</li>
+                <li><strong>Kubernetes</strong> - איך לפרוס ולנהל אפליקציה בענן</li>
+            </ol>
+        </div>
+        
+        <div class="info-box" style="background: #fef3c7; border-color: #f59e0b;">
+            <strong>טיפ אחרון לראיון:</strong>
+            <p>
+                אל תפחד להגיד "אני לא יודע".
+                עדיף להגיד "אני לא בטוח, אבל הייתי בודק ככה..." מאשר להמציא תשובה.
+            </p>
+        </div>
+        
+        <div class="page-break"></div>
+        
+        <!-- PART 2: Interview Questions -->
+        <div class="cover" style="background: linear-gradient(135deg, #059669 0%, #047857 100%); margin-top: 60px;">
+            <h1>📚 חלק ב׳</h1>
+            <div class="subtitle">שאלות ראיון DevOps - מדריך מקיף</div>
+            <div class="badge">AWS | Kubernetes | Terraform | CI/CD</div>
+        </div>
+        
+        <!-- Chapter 10: VPC -->
+        <h1>פרק 10: AWS VPC - כל מה שצריך לדעת</h1>
+        
+        <h2>10.1 מה זה VPC?</h2>
+        
+        <div class="interview-question">
+            <strong>"מה זה VPC?"</strong>
+        </div>
+        
+        <div class="answer">
+            <strong>VPC</strong> (Virtual Private Cloud) = רשת וירטואלית פרטית בענן AWS.
+            <br><br>
+            זה כמו לבנות את הרשת הפרטית שלך בתוך AWS - אתה מחליט:
+            <ul>
+                <li>איזה טווח כתובות IP (CIDR)</li>
+                <li>איך לחלק ל-Subnets</li>
+                <li>מי יכול לגשת למה</li>
+                <li>איך תנועה נכנסת ויוצאת</li>
+            </ul>
+        </div>
+        
+        <div class="diagram">
+<pre>
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                              AWS REGION                                      │
+│                                                                              │
+│   ┌─────────────────────────────────────────────────────────────────────┐   │
+│   │                         VPC (10.0.0.0/16)                            │   │
+│   │                                                                      │   │
+│   │   ┌─────────────────────────┐    ┌─────────────────────────┐        │   │
+│   │   │   PUBLIC SUBNET         │    │   PRIVATE SUBNET        │        │   │
+│   │   │   10.0.1.0/24          │    │   10.0.2.0/24           │        │   │
+│   │   │                         │    │                         │        │   │
+│   │   │   ┌─────────────┐      │    │   ┌─────────────┐       │        │   │
+│   │   │   │    EC2      │      │    │   │     RDS     │       │        │   │
+│   │   │   │   (Web)     │      │    │   │  (Database) │       │        │   │
+│   │   │   └─────────────┘      │    │   └─────────────┘       │        │   │
+│   │   │          │              │    │                         │        │   │
+│   │   │          │              │    │                         │        │   │
+│   │   └──────────┼──────────────┘    └─────────────────────────┘        │   │
+│   │              │                                                       │   │
+│   │              ▼                                                       │   │
+│   │   ┌─────────────────────┐                                           │   │
+│   │   │  Internet Gateway   │ ◀──── גישה לאינטרנט                       │   │
+│   │   └─────────────────────┘                                           │   │
+│   │                                                                      │   │
+│   └─────────────────────────────────────────────────────────────────────┘   │
+│                                                                              │
+└─────────────────────────────────────────────────────────────────────────────┘
+</pre>
+        </div>
+        
+        <h2>10.2 מושגי VPC חיוניים</h2>
+        
+        <div class="interview-question">
+            <strong>"מה ההבדל בין Subnet פרטי לציבורי?"</strong>
+        </div>
+        
+        <table>
+            <tr>
+                <th>מאפיין</th>
+                <th>Public Subnet</th>
+                <th>Private Subnet</th>
+            </tr>
+            <tr>
+                <td>גישה לאינטרנט</td>
+                <td>ישירה דרך Internet Gateway</td>
+                <td>רק דרך NAT Gateway</td>
+            </tr>
+            <tr>
+                <td>IP ציבורי</td>
+                <td>יש</td>
+                <td>אין</td>
+            </tr>
+            <tr>
+                <td>Route Table</td>
+                <td>מצביע ל-IGW</td>
+                <td>מצביע ל-NAT</td>
+            </tr>
+            <tr>
+                <td>שימוש</td>
+                <td>Web servers, Load Balancers</td>
+                <td>Databases, Internal services</td>
+            </tr>
+        </table>
+        
+        <div class="interview-question">
+            <strong>"מהו Internet Gateway?"</strong>
+        </div>
+        
+        <div class="answer">
+            <strong>Internet Gateway (IGW)</strong> = שער שמאפשר תקשורת בין VPC לאינטרנט.
+            <ul>
+                <li>מאפשר לשרתים ב-Public Subnet לצאת ולהיכנס מהאינטרנט</li>
+                <li>Highly Available - AWS מנהל אותו</li>
+                <li>חינמי (משלמים רק על Data Transfer)</li>
+            </ul>
+        </div>
+        
+        <div class="interview-question">
+            <strong>"מהו NAT Gateway?"</strong>
+        </div>
+        
+        <div class="answer">
+            <strong>NAT Gateway</strong> = מאפשר לשרתים ב-Private Subnet לצאת לאינטרנט בלי להיחשף.
+            <ul>
+                <li>יציאה בלבד - אין אפשרות להיכנס מבחוץ</li>
+                <li>יושב ב-Public Subnet</li>
+                <li>עולה כסף (לפי שעה + Data)</li>
+                <li>שימוש: עדכוני תוכנה, API calls חיצוניים</li>
+            </ul>
+        </div>
+        
+        <div class="diagram">
+<pre>
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                              VPC                                             │
+│                                                                              │
+│   PUBLIC SUBNET                          PRIVATE SUBNET                      │
+│   ┌─────────────────────────┐            ┌─────────────────────────┐        │
+│   │                         │            │                         │        │
+│   │   ┌─────────────────┐   │            │   ┌─────────────────┐   │        │
+│   │   │   NAT Gateway   │◀──┼────────────┼───│      EC2        │   │        │
+│   │   └────────┬────────┘   │            │   │   (Database)    │   │        │
+│   │            │            │            │   └─────────────────┘   │        │
+│   └────────────┼────────────┘            └─────────────────────────┘        │
+│                │                                                             │
+│                ▼                                                             │
+│   ┌─────────────────────┐                                                   │
+│   │  Internet Gateway   │                                                   │
+│   └──────────┬──────────┘                                                   │
+│              │                                                               │
+└──────────────┼───────────────────────────────────────────────────────────────┘
+               │
+               ▼
+          INTERNET
+</pre>
+        </div>
+        
+        <h2>10.3 VPC Endpoints ו-Private Link</h2>
+        
+        <div class="interview-question">
+            <strong>"מהי טכנולוגיית Private Link?"</strong>
+        </div>
+        
+        <div class="answer">
+            <strong>Private Link / VPC Endpoints</strong> = גישה לשירותי AWS בלי לעבור דרך האינטרנט.
+            <br><br>
+            <strong>שני סוגים:</strong>
+            <ul>
+                <li><strong>Interface Endpoint</strong> - ENI (כרטיס רשת) בתוך ה-VPC. עובד עם רוב השירותים.</li>
+                <li><strong>Gateway Endpoint</strong> - רק ל-S3 ו-DynamoDB. חינמי!</li>
+            </ul>
+            <br>
+            <strong>יתרונות:</strong>
+            <ul>
+                <li>אבטחה - Traffic לא יוצא מרשת AWS</li>
+                <li>ביצועים - Latency נמוך יותר</li>
+                <li>עלות - לא משלמים על NAT Gateway</li>
+            </ul>
+        </div>
+        
+        <div class="page-break"></div>
+        
+        <!-- Chapter 11: IAM -->
+        <h1>פרק 11: AWS IAM - זהויות והרשאות</h1>
+        
+        <div class="interview-question">
+            <strong>"מה ההבדל בין IAM Role ל-IAM User?"</strong>
+        </div>
+        
+        <table>
+            <tr>
+                <th>מאפיין</th>
+                <th>IAM User</th>
+                <th>IAM Role</th>
+            </tr>
+            <tr>
+                <td>מיועד ל</td>
+                <td>אנשים (בני אדם)</td>
+                <td>שירותים / אפליקציות</td>
+            </tr>
+            <tr>
+                <td>אימות</td>
+                <td>Username + Password / Access Keys</td>
+                <td>Assume Role (זמני)</td>
+            </tr>
+            <tr>
+                <td>תוקף</td>
+                <td>קבוע עד שמוחקים</td>
+                <td>זמני (credentials מתחלפים)</td>
+            </tr>
+            <tr>
+                <td>דוגמה</td>
+                <td>מפתח שנכנס ל-Console</td>
+                <td>EC2 שניגש ל-S3</td>
+            </tr>
+        </table>
+        
+        <div class="interview-question">
+            <strong>"מה ההבדל בין IAM Policy ל-Resource Based Policy?"</strong>
+        </div>
+        
+        <table>
+            <tr>
+                <th>סוג</th>
+                <th>IAM Policy</th>
+                <th>Resource Based Policy</th>
+            </tr>
+            <tr>
+                <td>מוצמד ל</td>
+                <td>User / Group / Role</td>
+                <td>משאב (S3 Bucket, SQS, etc.)</td>
+            </tr>
+            <tr>
+                <td>מגדיר</td>
+                <td>"מה המשתמש יכול לעשות"</td>
+                <td>"מי יכול לגשת למשאב"</td>
+            </tr>
+            <tr>
+                <td>Cross-Account</td>
+                <td>דורש Assume Role</td>
+                <td>ישיר - Principal מחשבון אחר</td>
+            </tr>
+        </table>
+        
+        <div class="page-break"></div>
+        
+        <!-- Chapter 12: AWS Storage -->
+        <h1>פרק 12: AWS Storage - אחסון בענן</h1>
+        
+        <div class="interview-question">
+            <strong>"מה ההבדל בין EBS ל-EFS?"</strong>
+        </div>
+        
+        <table>
+            <tr>
+                <th>מאפיין</th>
+                <th>EBS</th>
+                <th>EFS</th>
+            </tr>
+            <tr>
+                <td>סוג</td>
+                <td>Block Storage (דיסק)</td>
+                <td>File Storage (NFS)</td>
+            </tr>
+            <tr>
+                <td>חיבור</td>
+                <td>EC2 אחד בלבד (באותו AZ)</td>
+                <td>מרובה EC2 (Cross-AZ)</td>
+            </tr>
+            <tr>
+                <td>Scaling</td>
+                <td>ידני (צריך להגדיל)</td>
+                <td>אוטומטי</td>
+            </tr>
+            <tr>
+                <td>מחיר</td>
+                <td>זול יותר</td>
+                <td>יקר יותר</td>
+            </tr>
+            <tr>
+                <td>שימוש</td>
+                <td>Database, Boot volume</td>
+                <td>Shared files, CMS</td>
+            </tr>
+        </table>
+        
+        <div class="interview-question">
+            <strong>"מה זה S3?"</strong>
+        </div>
+        
+        <div class="answer">
+            <strong>S3</strong> (Simple Storage Service) = Object Storage - אחסון אובייקטים.
+            <ul>
+                <li><strong>Unlimited</strong> - אין הגבלה על כמות הנתונים</li>
+                <li><strong>Durability</strong> - 99.999999999% (11 תשיעיות!)</li>
+                <li><strong>Versioning</strong> - שמירת גרסאות</li>
+                <li><strong>Storage Classes</strong> - Standard, IA, Glacier (לפי צורך וסיבולת)</li>
+            </ul>
+            <strong>שימושים:</strong> Backup, Static website, Data lake, Artifacts
+        </div>
+        
+        <div class="page-break"></div>
+        
+        <!-- Chapter 13: AWS Compute -->
+        <h1>פרק 13: AWS Compute - עיבוד בענן</h1>
+        
+        <div class="interview-question">
+            <strong>"מה ההבדל בין On-Demand, Reserved, Spot, Dedicated?"</strong>
+        </div>
+        
+        <table>
+            <tr>
+                <th>סוג</th>
+                <th>מאפיין</th>
+                <th>הנחה</th>
+                <th>שימוש</th>
+            </tr>
+            <tr>
+                <td><strong>On-Demand</strong></td>
+                <td>משלמים לפי שימוש</td>
+                <td>0%</td>
+                <td>Dev, Testing, Short workloads</td>
+            </tr>
+            <tr>
+                <td><strong>Reserved</strong></td>
+                <td>התחייבות 1-3 שנים</td>
+                <td>עד 72%</td>
+                <td>Production, Predictable workloads</td>
+            </tr>
+            <tr>
+                <td><strong>Spot</strong></td>
+                <td>קיבולת עודפת (יכול להיפסק!)</td>
+                <td>עד 90%</td>
+                <td>Batch jobs, Flexible workloads</td>
+            </tr>
+            <tr>
+                <td><strong>Dedicated Host</strong></td>
+                <td>שרת פיזי שלם לך</td>
+                <td>תלוי</td>
+                <td>Compliance, Licensing</td>
+            </tr>
+        </table>
+        
+        <div class="interview-question">
+            <strong>"מה זה Lambda?"</strong>
+        </div>
+        
+        <div class="answer">
+            <strong>Lambda</strong> = Serverless compute - מריץ קוד בלי לנהל שרתים.
+            <ul>
+                <li><strong>Event-driven</strong> - מופעל על ידי אירועים</li>
+                <li><strong>Pay per use</strong> - משלמים רק על זמן ריצה</li>
+                <li><strong>Auto-scale</strong> - מתרחב אוטומטית</li>
+                <li><strong>Max 15 minutes</strong> - לא למשימות ארוכות</li>
+            </ul>
+        </div>
+        
+        <div class="interview-question">
+            <strong>"איזה שירות מתזמן טריגרים של Lambda?"</strong>
+        </div>
+        
+        <div class="answer">
+            <strong>Amazon EventBridge</strong> (לשעבר CloudWatch Events)
+            <ul>
+                <li>Cron expressions - "כל יום ב-2 בלילה"</li>
+                <li>Rate expressions - "כל 5 דקות"</li>
+                <li>Event patterns - תגובה לאירועים ב-AWS</li>
+            </ul>
+        </div>
+        
+        <div class="page-break"></div>
+        
+        <!-- Chapter 14: Load Balancing & DNS -->
+        <h1>פרק 14: Load Balancing, DNS ו-CDN</h1>
+        
+        <div class="interview-question">
+            <strong>"אילו סוגי Load Balancer יש ב-AWS?"</strong>
+        </div>
+        
+        <table>
+            <tr>
+                <th>סוג</th>
+                <th>שכבה</th>
+                <th>שימוש</th>
+            </tr>
+            <tr>
+                <td><strong>ALB</strong> (Application)</td>
+                <td>Layer 7 (HTTP/HTTPS)</td>
+                <td>Web apps, Microservices, Path routing</td>
+            </tr>
+            <tr>
+                <td><strong>NLB</strong> (Network)</td>
+                <td>Layer 4 (TCP/UDP)</td>
+                <td>High performance, Gaming, IoT</td>
+            </tr>
+            <tr>
+                <td><strong>GLB</strong> (Gateway)</td>
+                <td>Layer 3</td>
+                <td>Firewalls, Security appliances</td>
+            </tr>
+            <tr>
+                <td><strong>CLB</strong> (Classic)</td>
+                <td>Layer 4/7</td>
+                <td>Legacy - לא להשתמש בחדש</td>
+            </tr>
+        </table>
+        
+        <div class="interview-question">
+            <strong>"מהו DNS ואיך זה עובד ב-AWS?"</strong>
+        </div>
+        
+        <div class="answer">
+            <strong>DNS</strong> = תרגום שמות לכתובות IP.
+            <br><br>
+            <strong>Route 53</strong> = שירות ה-DNS של AWS:
+            <ul>
+                <li>Domain registration</li>
+                <li>DNS routing</li>
+                <li>Health checks</li>
+            </ul>
+        </div>
+        
+        <div class="interview-question">
+            <strong>"מה ההבדל בין ניתוב לפי מיקום, Latency, Weight?"</strong>
+        </div>
+        
+        <table>
+            <tr>
+                <th>סוג</th>
+                <th>לוגיקה</th>
+                <th>שימוש</th>
+            </tr>
+            <tr>
+                <td><strong>Geolocation</strong></td>
+                <td>לפי מיקום המשתמש</td>
+                <td>תוכן מותאם למדינה, Compliance</td>
+            </tr>
+            <tr>
+                <td><strong>Latency</strong></td>
+                <td>לפי זמן תגובה הנמוך ביותר</td>
+                <td>ביצועים מיטביים</td>
+            </tr>
+            <tr>
+                <td><strong>Weighted</strong></td>
+                <td>לפי אחוזים שהגדרת</td>
+                <td>A/B testing, Canary deployment</td>
+            </tr>
+        </table>
+        
+        <div class="interview-question">
+            <strong>"מה זה CloudFront?"</strong>
+        </div>
+        
+        <div class="answer">
+            <strong>CloudFront</strong> = CDN (Content Delivery Network) של AWS.
+            <ul>
+                <li>מפיץ תוכן ל-Edge Locations ברחבי העולם</li>
+                <li>מוריד Latency למשתמשים רחוקים</li>
+                <li>Caching - חוסך עומס מה-Origin</li>
+                <li>SSL/TLS מובנה</li>
+                <li>WAF integration - הגנה מפני התקפות</li>
+            </ul>
+        </div>
+        
+        <div class="interview-question">
+            <strong>"האם SSL ב-AWS זה בחינם? מהו ACM?"</strong>
+        </div>
+        
+        <div class="answer">
+            <strong>ACM</strong> (AWS Certificate Manager) = ניהול תעודות SSL.
+            <ul>
+                <li><strong>חינם!</strong> - תעודות SSL לשירותי AWS</li>
+                <li>חידוש אוטומטי</li>
+                <li>עובד עם: ALB, CloudFront, API Gateway</li>
+            </ul>
+            <em>הערה: לא עובד עם EC2 ישירות - צריך לשים מאחורי ALB</em>
+        </div>
+        
+        <div class="page-break"></div>
+        
+        <!-- Chapter 15: Databases -->
+        <h1>פרק 15: בסיסי נתונים</h1>
+        
+        <div class="interview-question">
+            <strong>"מה ההבדל בין DB רלציוני ללא-רלציוני?"</strong>
+        </div>
+        
+        <table>
+            <tr>
+                <th>מאפיין</th>
+                <th>Relational (SQL)</th>
+                <th>Non-Relational (NoSQL)</th>
+            </tr>
+            <tr>
+                <td>מבנה</td>
+                <td>טבלאות עם שורות ועמודות</td>
+                <td>Documents, Key-Value, Graph</td>
+            </tr>
+            <tr>
+                <td>Schema</td>
+                <td>קבוע מראש</td>
+                <td>גמיש</td>
+            </tr>
+            <tr>
+                <td>Scaling</td>
+                <td>בעיקר Vertical</td>
+                <td>בעיקר Horizontal</td>
+            </tr>
+            <tr>
+                <td>שימוש</td>
+                <td>טרנזקציות, קשרים מורכבים</td>
+                <td>Big Data, Real-time, Flexible</td>
+            </tr>
+            <tr>
+                <td>AWS</td>
+                <td>RDS, Aurora</td>
+                <td>DynamoDB, DocumentDB</td>
+            </tr>
+        </table>
+        
+        <div class="interview-question">
+            <strong>"מה זה Redis ולמה משתמשים בו?"</strong>
+        </div>
+        
+        <div class="answer">
+            <strong>Redis</strong> = In-memory key-value store.
+            <ul>
+                <li><strong>מהיר מאוד</strong> - הכל בזיכרון</li>
+                <li><strong>Caching</strong> - שמירת תוצאות queries</li>
+                <li><strong>Session storage</strong> - שמירת sessions</li>
+                <li><strong>Real-time</strong> - Leaderboards, Pub/Sub</li>
+            </ul>
+            <strong>ב-AWS:</strong> ElastiCache for Redis
+        </div>
+        
+        <div class="interview-question">
+            <strong>"מה ההבדל בין Standby DB ל-DB שכותבים אליו?"</strong>
+        </div>
+        
+        <div class="answer">
+            <table>
+                <tr>
+                    <th>סוג</th>
+                    <th>תפקיד</th>
+                </tr>
+                <tr>
+                    <td><strong>Primary (Master)</strong></td>
+                    <td>כל ה-Write operations + Read</td>
+                </tr>
+                <tr>
+                    <td><strong>Standby (Multi-AZ)</strong></td>
+                    <td>רק לגיבוי - Failover אוטומטי. אי אפשר לקרוא ממנו!</td>
+                </tr>
+                <tr>
+                    <td><strong>Read Replica</strong></td>
+                    <td>רק Read - לשיפור ביצועים</td>
+                </tr>
+            </table>
+        </div>
+        
+        <div class="page-break"></div>
+        
+        <!-- Chapter 16: Kubernetes Deep Dive -->
+        <h1>פרק 16: Kubernetes - שאלות מתקדמות</h1>
+        
+        <div class="interview-question">
+            <strong>"מהו Namespace בקוברנטיס?"</strong>
+        </div>
+        
+        <div class="answer">
+            <strong>Namespace</strong> = חלוקה לוגית של הקלאסטר.
+            <ul>
+                <li>מפריד בין סביבות (dev, staging, prod)</li>
+                <li>מפריד בין צוותים</li>
+                <li>מאפשר Resource Quotas</li>
+                <li>Default namespaces: default, kube-system, kube-public</li>
+            </ul>
+        </div>
+        
+        <div class="interview-question">
+            <strong>"מה ההבדל בין Deployment ל-ReplicaSet?"</strong>
+        </div>
+        
+        <table>
+            <tr>
+                <th>מאפיין</th>
+                <th>ReplicaSet</th>
+                <th>Deployment</th>
+            </tr>
+            <tr>
+                <td>תפקיד</td>
+                <td>שומר על מספר Pods קבוע</td>
+                <td>מנהל ReplicaSets + Updates</td>
+            </tr>
+            <tr>
+                <td>Rolling Updates</td>
+                <td>❌</td>
+                <td>✅</td>
+            </tr>
+            <tr>
+                <td>Rollback</td>
+                <td>❌</td>
+                <td>✅</td>
+            </tr>
+            <tr>
+                <td>שימוש ישיר</td>
+                <td>נדיר</td>
+                <td>תמיד!</td>
+            </tr>
+        </table>
+        
+        <div class="interview-question">
+            <strong>"מה זה Ingress ומה זה Ingress Controller?"</strong>
+        </div>
+        
+        <div class="answer">
+            <table>
+                <tr>
+                    <th>רכיב</th>
+                    <th>תפקיד</th>
+                </tr>
+                <tr>
+                    <td><strong>Ingress</strong></td>
+                    <td>Resource (קובץ YAML) שמגדיר חוקי ניתוב - hosts, paths</td>
+                </tr>
+                <tr>
+                    <td><strong>Ingress Controller</strong></td>
+                    <td>התוכנה שקוראת את ה-Ingress ומבצעת את הניתוב בפועל (NGINX, Traefik, HAProxy)</td>
+                </tr>
+            </table>
+            <em>משל: Ingress = תמרור, Ingress Controller = שוטר שאוכף את החוקים</em>
+        </div>
+        
+        <div class="interview-question">
+            <strong>"מהו קונטיינר מסוג Sidecar, Init, Application?"</strong>
+        </div>
+        
+        <table>
+            <tr>
+                <th>סוג</th>
+                <th>מתי רץ</th>
+                <th>תפקיד</th>
+            </tr>
+            <tr>
+                <td><strong>Init Container</strong></td>
+                <td>לפני ה-Main containers</td>
+                <td>הכנות: הורדת קבצים, המתנה ל-DB</td>
+            </tr>
+            <tr>
+                <td><strong>Application Container</strong></td>
+                <td>אחרי Init</td>
+                <td>האפליקציה העיקרית</td>
+            </tr>
+            <tr>
+                <td><strong>Sidecar Container</strong></td>
+                <td>במקביל ל-Main</td>
+                <td>עזר: Logging, Proxy, Monitoring</td>
+            </tr>
+        </table>
+        
+        <div class="interview-question">
+            <strong>"מה זה Probe ומה זה Liveness?"</strong>
+        </div>
+        
+        <div class="answer">
+            <strong>Probe</strong> = בדיקה שקוברנטיס מבצע על Container.
+            <table>
+                <tr>
+                    <th>Probe</th>
+                    <th>שואל</th>
+                    <th>אם נכשל</th>
+                </tr>
+                <tr>
+                    <td><strong>Liveness</strong></td>
+                    <td>"האם אתה חי?"</td>
+                    <td>Restart לcontainer</td>
+                </tr>
+                <tr>
+                    <td><strong>Readiness</strong></td>
+                    <td>"האם אתה מוכן?"</td>
+                    <td>לא שולחים traffic</td>
+                </tr>
+                <tr>
+                    <td><strong>Startup</strong></td>
+                    <td>"האם עלית?"</td>
+                    <td>ממתינים (לאפליקציות איטיות)</td>
+                </tr>
+            </table>
+        </div>
+        
+        <div class="interview-question">
+            <strong>"מהו Service Account בקוברנטיס?"</strong>
+        </div>
+        
+        <div class="answer">
+            <strong>Service Account</strong> = זהות עבור Pods (לא בני אדם).
+            <ul>
+                <li>מאפשר ל-Pod לתקשר עם Kubernetes API</li>
+                <li>משמש להרשאות RBAC</li>
+                <li>אפשר לקשר ל-IAM Role ב-AWS (IRSA)</li>
+            </ul>
+        </div>
+        
+        <div class="interview-question">
+            <strong>"איך מתבצע Autoscale בקוברנטיס?"</strong>
+        </div>
+        
+        <div class="answer">
+            <strong>HPA</strong> (Horizontal Pod Autoscaler):
+            <ul>
+                <li>מוסיף/מוריד Pods לפי metrics (CPU, Memory, Custom)</li>
+                <li>מגדירים min/max replicas</li>
+                <li>Target: למשל 70% CPU</li>
+            </ul>
+            <strong>VPA</strong> (Vertical Pod Autoscaler):
+            <ul>
+                <li>משנה את ה-Resources של Pod קיים</li>
+            </ul>
+            <strong>Cluster Autoscaler</strong>:
+            <ul>
+                <li>מוסיף/מוריד Nodes לקלאסטר</li>
+            </ul>
+        </div>
+        
+        <div class="interview-question">
+            <strong>"מה זה PVC בקוברנטיס?"</strong>
+        </div>
+        
+        <div class="answer">
+            <strong>PVC</strong> (Persistent Volume Claim) = בקשה לאחסון.
+            <ul>
+                <li><strong>PV</strong> (Persistent Volume) = האחסון הפיזי</li>
+                <li><strong>PVC</strong> = הבקשה - "אני צריך 10GB"</li>
+                <li><strong>StorageClass</strong> = סוג האחסון (SSD, HDD)</li>
+            </ul>
+            <em>משל: PV = דירה, PVC = חוזה שכירות</em>
+        </div>
+        
+        <div class="page-break"></div>
+        
+        <!-- Chapter 17: Kubernetes Workload Types -->
+        <h1>פרק 17: סוגי Workloads בקוברנטיס</h1>
+        
+        <div class="interview-question">
+            <strong>"מה ההבדל בין StatefulSet, DaemonSet, Deployment?"</strong>
+        </div>
+        
+        <table>
+            <tr>
+                <th>סוג</th>
+                <th>תפקיד</th>
+                <th>דוגמה</th>
+            </tr>
+            <tr>
+                <td><strong>Deployment</strong></td>
+                <td>Stateless apps - Pods זהים וחלופיים</td>
+                <td>Web servers, APIs</td>
+            </tr>
+            <tr>
+                <td><strong>StatefulSet</strong></td>
+                <td>Stateful apps - לכל Pod זהות קבועה + PVC</td>
+                <td>Databases, Kafka</td>
+            </tr>
+            <tr>
+                <td><strong>DaemonSet</strong></td>
+                <td>Pod אחד על כל Node</td>
+                <td>Logging agent, Monitoring</td>
+            </tr>
+        </table>
+        
+        <div class="interview-question">
+            <strong>"תן דוגמה לסוגי Services בקוברנטיס"</strong>
+        </div>
+        
+        <table>
+            <tr>
+                <th>סוג</th>
+                <th>נגישות</th>
+                <th>שימוש</th>
+            </tr>
+            <tr>
+                <td><strong>ClusterIP</strong></td>
+                <td>רק מתוך הקלאסטר</td>
+                <td>שירותים פנימיים (ברירת מחדל)</td>
+            </tr>
+            <tr>
+                <td><strong>NodePort</strong></td>
+                <td>Port על כל Node (30000-32767)</td>
+                <td>Dev/Testing</td>
+            </tr>
+            <tr>
+                <td><strong>LoadBalancer</strong></td>
+                <td>Cloud LB חיצוני</td>
+                <td>Production</td>
+            </tr>
+            <tr>
+                <td><strong>ExternalName</strong></td>
+                <td>DNS CNAME</td>
+                <td>גישה לשירות חיצוני</td>
+            </tr>
+        </table>
+        
+        <div class="interview-question">
+            <strong>"תן דוגמה ל-4 סוגי פריסות בקוברנטיס"</strong>
+        </div>
+        
+        <table>
+            <tr>
+                <th>סוג</th>
+                <th>איך עובד</th>
+                <th>מתי</th>
+            </tr>
+            <tr>
+                <td><strong>Rolling Update</strong></td>
+                <td>מחליף Pods בהדרגה</td>
+                <td>ברירת מחדל - Zero downtime</td>
+            </tr>
+            <tr>
+                <td><strong>Recreate</strong></td>
+                <td>מוחק הכל → מעלה חדש</td>
+                <td>כשאי אפשר 2 גרסאות במקביל</td>
+            </tr>
+            <tr>
+                <td><strong>Blue-Green</strong></td>
+                <td>סביבה חדשה מלאה → Switch</td>
+                <td>Rollback מהיר</td>
+            </tr>
+            <tr>
+                <td><strong>Canary</strong></td>
+                <td>גרסה חדשה ל-% קטן מהמשתמשים</td>
+                <td>בדיקה בProduction</td>
+            </tr>
+        </table>
+        
+        <div class="interview-question">
+            <strong>"מהו Istio בקוברנטיס?"</strong>
+        </div>
+        
+        <div class="answer">
+            <strong>Istio</strong> = Service Mesh - שכבת ניהול תקשורת.
+            <ul>
+                <li><strong>Traffic Management</strong> - Routing, Load Balancing</li>
+                <li><strong>Security</strong> - mTLS בין services</li>
+                <li><strong>Observability</strong> - Metrics, Tracing, Logging</li>
+                <li>עובד עם Sidecar (Envoy proxy)</li>
+            </ul>
+        </div>
+        
+        <div class="page-break"></div>
+        
+        <!-- Chapter 18: Helm -->
+        <h1>פרק 18: Helm - Package Manager לקוברנטיס</h1>
+        
+        <div class="interview-question">
+            <strong>"מה זה Helm ולמה אנחנו צריכים אותו?"</strong>
+        </div>
+        
+        <div class="answer">
+            <strong>Helm</strong> = Package manager לקוברנטיס (כמו apt/yum לLinux).
+            <ul>
+                <li><strong>Charts</strong> - חבילות מוכנות (NGINX, MySQL, etc.)</li>
+                <li><strong>Templating</strong> - קבצי YAML דינמיים עם משתנים</li>
+                <li><strong>Values</strong> - קובץ אחד לכל ההגדרות</li>
+                <li><strong>Releases</strong> - ניהול גרסאות והתקנות</li>
+            </ul>
+        </div>
+        
+        <div class="interview-question">
+            <strong>"מה זה Helm Lint?"</strong>
+        </div>
+        
+        <div class="answer">
+            <code>helm lint</code> = בודק תקינות של Chart.
+            <ul>
+                <li>מוצא שגיאות syntax</li>
+                <li>מזהיר על Best Practices</li>
+                <li>להריץ לפני helm install!</li>
+            </ul>
+        </div>
+        
+        <div class="interview-question">
+            <strong>"מה זה קובץ helpers ב-Helm?"</strong>
+        </div>
+        
+        <div class="answer">
+            <code>_helpers.tpl</code> = קובץ עם פונקציות לשימוש חוזר.
+            <ul>
+                <li>מגדיר templates משותפים</li>
+                <li>לדוגמה: שם מלא של resource, labels</li>
+                <li>מתחיל ב-_ אז לא נוצר ממנו manifest</li>
+            </ul>
+        </div>
+        
+        <div class="page-break"></div>
+        
+        <!-- Chapter 19: CI/CD -->
+        <h1>פרק 19: CI/CD - אינטגרציה ופריסה רציפה</h1>
+        
+        <div class="interview-question">
+            <strong>"מה זה CI ומה CD?"</strong>
+        </div>
+        
+        <table>
+            <tr>
+                <th>מונח</th>
+                <th>משמעות</th>
+                <th>מה כולל</th>
+            </tr>
+            <tr>
+                <td><strong>CI</strong></td>
+                <td>Continuous Integration</td>
+                <td>Build, Test, Lint - על כל commit</td>
+            </tr>
+            <tr>
+                <td><strong>CD</strong></td>
+                <td>Continuous Delivery/Deployment</td>
+                <td>פריסה אוטומטית לסביבות</td>
+            </tr>
+        </table>
+        
+        <div class="interview-question">
+            <strong>"מה ההבדל בין GitHub Actions ל-Jenkins?"</strong>
+        </div>
+        
+        <table>
+            <tr>
+                <th>מאפיין</th>
+                <th>GitHub Actions</th>
+                <th>Jenkins</th>
+            </tr>
+            <tr>
+                <td>התקנה</td>
+                <td>מובנה ב-GitHub (SaaS)</td>
+                <td>Self-hosted</td>
+            </tr>
+            <tr>
+                <td>תחזוקה</td>
+                <td>GitHub מנהל</td>
+                <td>אתה מנהל</td>
+            </tr>
+            <tr>
+                <td>עלות</td>
+                <td>דקות חינם + תשלום</td>
+                <td>חינמי (חוץ משרתים)</td>
+            </tr>
+            <tr>
+                <td>גמישות</td>
+                <td>טובה</td>
+                <td>מקסימלית (plugins)</td>
+            </tr>
+            <tr>
+                <td>מתאים ל</td>
+                <td>פרויקטים ב-GitHub</td>
+                <td>Enterprise, Complex flows</td>
+            </tr>
+        </table>
+        
+        <div class="interview-question">
+            <strong>"מה זה Artifact?"</strong>
+        </div>
+        
+        <div class="answer">
+            <strong>Artifact</strong> = תוצר של תהליך Build.
+            <ul>
+                <li>Docker Image</li>
+                <li>JAR/WAR file</li>
+                <li>Compiled binary</li>
+                <li>Test results</li>
+            </ul>
+            <strong>נשמר ב:</strong> Artifactory, Nexus, S3, GitHub Packages
+        </div>
+        
+        <div class="interview-question">
+            <strong>"מה ההבדל בין סביבת Test, Stage, Prod?"</strong>
+        </div>
+        
+        <table>
+            <tr>
+                <th>סביבה</th>
+                <th>מטרה</th>
+                <th>מאפיינים</th>
+            </tr>
+            <tr>
+                <td><strong>Dev/Test</strong></td>
+                <td>בדיקות מפתחים</td>
+                <td>נתונים מזויפים, משאבים קטנים</td>
+            </tr>
+            <tr>
+                <td><strong>Staging</strong></td>
+                <td>Pre-production</td>
+                <td>כמו Prod, נתונים אנונימיים</td>
+            </tr>
+            <tr>
+                <td><strong>Production</strong></td>
+                <td>משתמשים אמיתיים</td>
+                <td>HA, Monitoring, Real data</td>
+            </tr>
+        </table>
+        
+        <div class="page-break"></div>
+        
+        <!-- Chapter 20: Terraform -->
+        <h1>פרק 20: Terraform - Infrastructure as Code</h1>
+        
+        <div class="interview-question">
+            <strong>"מהו Drift ב-Terraform?"</strong>
+        </div>
+        
+        <div class="answer">
+            <strong>Drift</strong> = פער בין ה-State לבין המצב האמיתי בענן.
+            <ul>
+                <li>קורה כשמישהו שינה ידנית ב-Console</li>
+                <li><code>terraform plan</code> מזהה את ה-Drift</li>
+                <li><code>terraform apply</code> מתקן חזרה</li>
+            </ul>
+        </div>
+        
+        <div class="interview-question">
+            <strong>"אם נערוך שם של Bucket ב-Terraform - מה יקרה?"</strong>
+        </div>
+        
+        <div class="answer">
+            <strong>ימחק את הישן ויצור חדש!</strong>
+            <br><br>
+            כי שם Bucket הוא "immutable" - לא ניתן לשינוי.
+            Terraform יעשה: <code>destroy</code> → <code>create</code>
+            <br><br>
+            <em>זהירות! אפשר לאבד נתונים!</em>
+        </div>
+        
+        <div class="interview-question">
+            <strong>"מה זה Terraform Validate?"</strong>
+        </div>
+        
+        <div class="answer">
+            <code>terraform validate</code> = בודק תקינות קבצי .tf
+            <ul>
+                <li>Syntax errors</li>
+                <li>Type mismatches</li>
+                <li>Missing required arguments</li>
+            </ul>
+            <em>לא בודק מול הענן - רק את הקוד!</em>
+        </div>
+        
+        <div class="interview-question">
+            <strong>"איפה נרצה לשמור את קובץ ה-State ולמה?"</strong>
+        </div>
+        
+        <div class="answer">
+            <strong>Remote Backend</strong> - לדוגמה S3 עם DynamoDB locking.
+            <br><br>
+            <strong>למה?</strong>
+            <ul>
+                <li>שיתוף בין חברי צוות</li>
+                <li>Locking - מניעת שינויים במקביל</li>
+                <li>גיבוי ואבטחה</li>
+                <li>לא לשמור ב-Git! (מידע רגיש)</li>
+            </ul>
+        </div>
+        
+        <div class="interview-question">
+            <strong>"מה זה Terraform Workspace?"</strong>
+        </div>
+        
+        <div class="answer">
+            <strong>Workspace</strong> = State נפרד לאותו קוד.
+            <ul>
+                <li>שימוש: dev, staging, prod</li>
+                <li><code>terraform workspace new dev</code></li>
+                <li><code>terraform workspace select prod</code></li>
+            </ul>
+            <em>חלופה: תיקיות נפרדות לכל סביבה</em>
+        </div>
+        
+        <div class="interview-question">
+            <strong>"מהו Module בTerraform?"</strong>
+        </div>
+        
+        <div class="answer">
+            <strong>Module</strong> = קבוצת Resources לשימוש חוזר.
+            <ul>
+                <li>כמו פונקציה - מקבל inputs, מחזיר outputs</li>
+                <li>DRY - Don't Repeat Yourself</li>
+                <li>מודולים מוכנים ב-Terraform Registry</li>
+            </ul>
+        </div>
+        
+        <div class="interview-question">
+            <strong>"מה ההבדל בין CloudFormation ל-Terraform?"</strong>
+        </div>
+        
+        <table>
+            <tr>
+                <th>מאפיין</th>
+                <th>CloudFormation</th>
+                <th>Terraform</th>
+            </tr>
+            <tr>
+                <td>ספק</td>
+                <td>AWS בלבד</td>
+                <td>Multi-cloud</td>
+            </tr>
+            <tr>
+                <td>שפה</td>
+                <td>JSON/YAML</td>
+                <td>HCL</td>
+            </tr>
+            <tr>
+                <td>State</td>
+                <td>מנוהל ע"י AWS</td>
+                <td>אתה מנהל</td>
+            </tr>
+            <tr>
+                <td>עלות</td>
+                <td>חינם</td>
+                <td>חינם (Cloud paid)</td>
+            </tr>
+        </table>
+        
+        <div class="page-break"></div>
+        
+        <!-- Chapter 21: Architecture -->
+        <h1>פרק 21: ארכיטקטורה ומושגים</h1>
+        
+        <div class="interview-question">
+            <strong>"מה זה Microservices?"</strong>
+        </div>
+        
+        <div class="answer">
+            <strong>Microservices</strong> = ארכיטקטורה של שירותים קטנים ועצמאיים.
+            <ul>
+                <li>כל שירות עושה דבר אחד</li>
+                <li>תקשורת דרך API</li>
+                <li>ניתן לפרוס כל שירות בנפרד</li>
+                <li>טכנולוגיות שונות לכל שירות</li>
+            </ul>
+        </div>
+        
+        <div class="interview-question">
+            <strong>"מה זה Monolith?"</strong>
+        </div>
+        
+        <div class="answer">
+            <strong>Monolith</strong> = אפליקציה אחת גדולה שעושה הכל.
+            <ul>
+                <li>קוד אחד, DB אחד, פריסה אחת</li>
+                <li>פשוט יותר להתחיל איתו</li>
+                <li>קשה לסקייל וחלקים ספציפיים</li>
+            </ul>
+        </div>
+        
+        <div class="interview-question">
+            <strong>"מתי Monolith ומתי Microservices?"</strong>
+        </div>
+        
+        <table>
+            <tr>
+                <th>Monolith</th>
+                <th>Microservices</th>
+            </tr>
+            <tr>
+                <td>צוות קטן</td>
+                <td>צוותים גדולים/מרובים</td>
+            </tr>
+            <tr>
+                <td>MVP / Startup</td>
+                <td>מוצר בוגר</td>
+            </tr>
+            <tr>
+                <td>Domain פשוט</td>
+                <td>Domain מורכב</td>
+            </tr>
+            <tr>
+                <td>לא צריך scale מיוחד</td>
+                <td>Scale שונה לחלקים שונים</td>
+            </tr>
+        </table>
+        
+        <div class="interview-question">
+            <strong>"מתי EC2 ומתי Kubernetes?"</strong>
+        </div>
+        
+        <table>
+            <tr>
+                <th>EC2</th>
+                <th>Kubernetes</th>
+            </tr>
+            <tr>
+                <td>אפליקציה פשוטה</td>
+                <td>Microservices מרובים</td>
+            </tr>
+            <tr>
+                <td>צוות קטן בלי ניסיון K8s</td>
+                <td>צוות עם ידע K8s</td>
+            </tr>
+            <tr>
+                <td>Stateful apps (legacy)</td>
+                <td>Stateless / Cloud Native</td>
+            </tr>
+            <tr>
+                <td>עלות נמוכה חשובה</td>
+                <td>Scalability חשובה</td>
+            </tr>
+        </table>
+        
+        <div class="interview-question">
+            <strong>"מה זה Decoupled Services?"</strong>
+        </div>
+        
+        <div class="answer">
+            <strong>Decoupled</strong> = שירותים לא תלויים אחד בשני ישירות.
+            <ul>
+                <li>תקשורת דרך Queue (SQS) או Events</li>
+                <li>אם שירות A נופל, B ממשיך לעבוד</li>
+                <li>Async processing</li>
+            </ul>
+            <em>הפך: Tightly Coupled - שירות A קורא ישירות ל-B</em>
+        </div>
+        
+        <div class="page-break"></div>
+        
+        <!-- Chapter 22: Monitoring -->
+        <h1>פרק 22: Monitoring ו-Observability</h1>
+        
+        <div class="interview-question">
+            <strong>"מה זה Prometheus?"</strong>
+        </div>
+        
+        <div class="answer">
+            <strong>Prometheus</strong> = מערכת Monitoring ואיסוף Metrics.
+            <ul>
+                <li>Pull-based - מושך metrics מהשירותים</li>
+                <li>Time-series DB</li>
+                <li>PromQL - שפת שאילתות</li>
+                <li>Alerting מובנה</li>
+            </ul>
+        </div>
+        
+        <div class="interview-question">
+            <strong>"מה זה Grafana?"</strong>
+        </div>
+        
+        <div class="answer">
+            <strong>Grafana</strong> = כלי Visualization לmetrics.
+            <ul>
+                <li>Dashboards יפים</li>
+                <li>מתחבר ל-Prometheus, CloudWatch, ועוד</li>
+                <li>Alerts</li>
+                <li>Open source</li>
+            </ul>
+        </div>
+        
+        <div class="interview-question">
+            <strong>"מהו NGINX?"</strong>
+        </div>
+        
+        <div class="answer">
+            <strong>NGINX</strong> = Web server / Reverse Proxy / Load Balancer.
+            <ul>
+                <li><strong>Web Server</strong> - מגיש קבצים סטטיים</li>
+                <li><strong>Reverse Proxy</strong> - מעביר בקשות ל-backend</li>
+                <li><strong>Load Balancer</strong> - מפזר עומסים</li>
+                <li><strong>Ingress Controller</strong> - בקוברנטיס</li>
+            </ul>
+        </div>
+        
+        <div class="page-break"></div>
+        
+        <!-- Chapter 23: API & HTTP -->
+        <h1>פרק 23: API ו-HTTP</h1>
+        
+        <div class="interview-question">
+            <strong>"מה ההבדל בין קודים 200, 300, 400, 500?"</strong>
+        </div>
+        
+        <table>
+            <tr>
+                <th>סדרה</th>
+                <th>משמעות</th>
+                <th>דוגמאות</th>
+            </tr>
+            <tr>
+                <td><strong>2xx</strong></td>
+                <td>הצלחה</td>
+                <td>200 OK, 201 Created, 204 No Content</td>
+            </tr>
+            <tr>
+                <td><strong>3xx</strong></td>
+                <td>Redirect</td>
+                <td>301 Moved, 302 Found, 304 Not Modified</td>
+            </tr>
+            <tr>
+                <td><strong>4xx</strong></td>
+                <td>שגיאת Client</td>
+                <td>400 Bad Request, 401 Unauthorized, 404 Not Found</td>
+            </tr>
+            <tr>
+                <td><strong>5xx</strong></td>
+                <td>שגיאת Server</td>
+                <td>500 Internal Error, 502 Bad Gateway, 503 Unavailable</td>
+            </tr>
+        </table>
+        
+        <div class="interview-question">
+            <strong>"מה הם 4 סוגי קריאות API?"</strong>
+        </div>
+        
+        <div class="answer">
+            (CRUD Operations)
+            <table>
+                <tr>
+                    <th>Method</th>
+                    <th>פעולה</th>
+                    <th>דוגמה</th>
+                </tr>
+                <tr>
+                    <td><strong>GET</strong></td>
+                    <td>Read - קריאה</td>
+                    <td>GET /users/123</td>
+                </tr>
+                <tr>
+                    <td><strong>POST</strong></td>
+                    <td>Create - יצירה</td>
+                    <td>POST /users</td>
+                </tr>
+                <tr>
+                    <td><strong>PUT/PATCH</strong></td>
+                    <td>Update - עדכון</td>
+                    <td>PUT /users/123</td>
+                </tr>
+                <tr>
+                    <td><strong>DELETE</strong></td>
+                    <td>Delete - מחיקה</td>
+                    <td>DELETE /users/123</td>
+                </tr>
+            </table>
+        </div>
+        
+        <div class="interview-question">
+            <strong>"מהו REST API? מה זה SOAP API?"</strong>
+        </div>
+        
+        <table>
+            <tr>
+                <th>מאפיין</th>
+                <th>REST</th>
+                <th>SOAP</th>
+            </tr>
+            <tr>
+                <td>פורמט</td>
+                <td>JSON (בד"כ)</td>
+                <td>XML בלבד</td>
+            </tr>
+            <tr>
+                <td>פרוטוקול</td>
+                <td>HTTP</td>
+                <td>HTTP, SMTP, TCP</td>
+            </tr>
+            <tr>
+                <td>משקל</td>
+                <td>קל</td>
+                <td>כבד</td>
+            </tr>
+            <tr>
+                <td>אבטחה</td>
+                <td>HTTPS + OAuth</td>
+                <td>WS-Security מובנה</td>
+            </tr>
+            <tr>
+                <td>שימוש</td>
+                <td>Web, Mobile, Modern</td>
+                <td>Enterprise, Banking</td>
+            </tr>
+        </table>
+        
+        <div class="page-break"></div>
+        
+        <!-- Chapter 24: Scenarios -->
+        <h1>פרק 24: תרחישים ופתרונות</h1>
+        
+        <h2>תרחיש 1: הקמת אתר E-Commerce</h2>
+        
+        <div class="interview-question">
+            <strong>"חנות טיפוח רוצה להקים אתר אינטרנט. מה השלבים?"</strong>
+        </div>
+        
+        <div class="answer">
+            <strong>שאלות לשאול:</strong>
+            <ol>
+                <li><strong>גאוגרפיה</strong> - בעיקר ישראל? → Region il-central-1. גלובלי? → CloudFront</li>
+                <li><strong>עדכניות מוצרים</strong> - לעיתים רחוקות? → Redis caching. תכופות? → פחות cache</li>
+                <li><strong>כמות כניסות</strong> - לפי זה מתכננים Scaling ו-DB</li>
+            </ol>
+            <br>
+            <strong>ארכיטקטורה מוצעת:</strong>
+            <ul>
+                <li>CloudFront → ALB → EKS/EC2 (Auto Scaling)</li>
+                <li>RDS Aurora (Multi-AZ) + ElastiCache (Redis)</li>
+                <li>S3 לתמונות מוצרים</li>
+            </ul>
+        </div>
+        
+        <h2>תרחיש 2: קמפיין חגים - Scaling</h2>
+        
+        <div class="interview-question">
+            <strong>"10,000 כניסות ביום רגיל, 40,000 בחגים. איך להתכונן?"</strong>
+        </div>
+        
+        <div class="answer">
+            <ol>
+                <li><strong>Auto Scaling</strong> - הגדרת מדיניות לפי CPU (70%+)</li>
+                <li><strong>Read Replicas</strong> - הוספת DB לקריאות</li>
+                <li><strong>Caching</strong> - Redis לדברים שלא משתנים</li>
+                <li><strong>Pre-warming</strong> - להעלות instances מראש לפני הפיק</li>
+            </ol>
+        </div>
+        
+        <h2>תרחיש 3: שדרוג Kubernetes Cluster</h2>
+        
+        <div class="interview-question">
+            <strong>"איך לשדרג Cluster בלי Downtime?"</strong>
+        </div>
+        
+        <div class="answer">
+            <ol>
+                <li><strong>Control Plane קודם</strong> - חייב להיות מתקדם מה-Workers</li>
+                <li>מחכים שהכל תקין</li>
+                <li><strong>Worker Nodes</strong> - אחד-אחד (drain → upgrade → uncordon)</li>
+                <li>בודקים שהכל תקין</li>
+                <li>חוזרים על התהליך (max 2 minor versions בכל פעם)</li>
+            </ol>
+        </div>
+        
+        <h2>תרחיש 4: Pods במצב Error</h2>
+        
+        <div class="interview-question">
+            <strong>"Pods נכנסו למצב Error. מה עושים?"</strong>
+        </div>
+        
+        <div class="answer">
+            <ol>
+                <li><code>kubectl describe pod &lt;name&gt;</code> - מבט High Level</li>
+                <li><code>kubectl logs &lt;name&gt;</code> - לוגים של האפליקציה</li>
+            </ol>
+            <br>
+            <strong>סיבות נפוצות:</strong>
+            <ul>
+                <li>ImagePullBackOff - אין גישה ל-Registry</li>
+                <li>CrashLoopBackOff - האפליקציה קורסת</li>
+                <li>OOMKilled - חוסר זיכרון</li>
+                <li>Permissions - חוסר הרשאות</li>
+            </ul>
+        </div>
+        
+        <h2>תרחיש 5: Traffic מ-ALB לקוברנטיס</h2>
+        
+        <div class="interview-question">
+            <strong>"איך לוודא שתנועה מגיעה מ-ALB לקוברנטיס?"</strong>
+        </div>
+        
+        <div class="answer">
+            <strong>ברמת ALB:</strong>
+            <ul>
+                <li>ALB ב-Public Subnet</li>
+                <li>Security Group: Inbound 80, 443 from 0.0.0.0/0</li>
+                <li>Redirect 80 → 443</li>
+                <li>אפשר להוסיף WAF</li>
+            </ul>
+            <br>
+            <strong>ברמת Kubernetes:</strong>
+            <ul>
+                <li><strong>SG Referencing</strong> - רק ה-ALB SG יכול לגשת</li>
+                <li>Ingress מגדיר את חוקי הניתוב</li>
+                <li>Ingress Controller (NGINX) אוכף אותם</li>
+            </ul>
+        </div>
+        
+        <h2>תרחיש 6: Kubernetes בלי אינטרנט</h2>
+        
+        <div class="interview-question">
+            <strong>"קוברנטיס לא יכול לצאת לאינטרנט. מה הבעיות והפתרונות?"</strong>
+        </div>
+        
+        <div class="answer">
+            <strong>בעיות:</strong>
+            <ul>
+                <li>לא יכול לעשות Pull ל-Images</li>
+                <li>לא יכול להתקין packages</li>
+            </ul>
+            <br>
+            <strong>פתרונות:</strong>
+            <ul>
+                <li><strong>Private Registry</strong> - ECR עם VPC Endpoint</li>
+                <li><strong>Golden AMI</strong> - Images מוכנים מראש</li>
+                <li><strong>Private Link</strong> - גישה לשירותי AWS בלי אינטרנט</li>
+            </ul>
+        </div>
+        
+        <div class="page-break"></div>
+        
+        <!-- Chapter 25: Docker Advanced -->
+        <h1>פרק 25: Docker מתקדם</h1>
+        
+        <div class="interview-question">
+            <strong>"מה זה Multi-Stage Build?"</strong>
+        </div>
+        
+        <div class="answer">
+            <strong>Multi-Stage Build</strong> = בניית Docker Image במספר שלבים.
+            <br><br>
+            <strong>למה?</strong>
+            <ul>
+                <li>Image קטן יותר - לא כולל build tools</li>
+                <li>אבטחה - פחות כלים = פחות פגיעויות</li>
+                <li>הפרדה בין build ל-runtime</li>
+            </ul>
+        </div>
+        
+        <div class="code-block">
+<pre><code># Stage 1: Build
+FROM node:18 AS builder
+WORKDIR /app
+COPY package*.json ./
+RUN npm install
+COPY . .
+RUN npm run build
+
+# Stage 2: Production (רק התוצר!)
+FROM nginx:alpine
+COPY --from=builder /app/dist /usr/share/nginx/html
+# Image קטן! רק nginx + הקבצים</code></pre>
+        </div>
+        
+        <div class="diagram">
+<pre>
+┌────────────────────────────────────────────────────────────────┐
+│              MULTI-STAGE BUILD - לפני ואחרי                   │
+├────────────────────────────────────────────────────────────────┤
+│                                                                │
+│   SINGLE STAGE:                    MULTI-STAGE:               │
+│   ┌─────────────────────┐          ┌─────────────────────┐    │
+│   │ Node.js (1GB)       │          │ Stage 1: Build      │    │
+│   │ npm dependencies    │          │ ├─ Node.js          │    │
+│   │ Build tools         │          │ ├─ Dependencies     │    │
+│   │ Source code         │          │ └─ Build process    │    │
+│   │ Built files         │          │         │           │    │
+│   │                     │          │         ▼           │    │
+│   │ = ~800MB            │          │ ┌─────────────────┐ │    │
+│   └─────────────────────┘          │ │ Stage 2: Run    │ │    │
+│                                    │ │ ├─ nginx (20MB) │ │    │
+│                                    │ │ └─ dist/ files  │ │    │
+│                                    │ │                 │ │    │
+│                                    │ │ = ~50MB         │ │    │
+│                                    │ └─────────────────┘ │    │
+│                                    └─────────────────────┘    │
+│                                                                │
+│   🔴 גדול, איטי, לא מאובטח         🟢 קטן, מהיר, מאובטח       │
+│                                                                │
+└────────────────────────────────────────────────────────────────┘
+</pre>
+        </div>
+        
+        <div class="interview-question">
+            <strong>"מה זה Docker Volumes ו-Bind Mounts?"</strong>
+        </div>
+        
+        <table>
+            <tr>
+                <th>סוג</th>
+                <th>מה זה</th>
+                <th>שימוש</th>
+            </tr>
+            <tr>
+                <td><strong>Volume</strong></td>
+                <td>Docker מנהל את האחסון</td>
+                <td>Production - databases, persistent data</td>
+            </tr>
+            <tr>
+                <td><strong>Bind Mount</strong></td>
+                <td>מחבר תיקייה מהמחשב</td>
+                <td>Development - קוד שמשתנה</td>
+            </tr>
+            <tr>
+                <td><strong>tmpfs</strong></td>
+                <td>זיכרון בלבד (לא דיסק)</td>
+                <td>Sensitive data, cache</td>
+            </tr>
+        </table>
+        
+        <div class="code-block">
+<pre><code># Volume (Docker מנהל)
+docker run -v mydata:/app/data nginx
+
+# Bind Mount (תיקייה שלך)
+docker run -v /home/user/code:/app nginx
+
+# Docker Compose
+volumes:
+  - ./src:/app/src          # Bind mount
+  - db-data:/var/lib/mysql  # Named volume</code></pre>
+        </div>
+        
+        <div class="interview-question">
+            <strong>"מה זה Docker Compose?"</strong>
+        </div>
+        
+        <div class="answer">
+            <strong>Docker Compose</strong> = כלי להרצת מספר Containers יחד.
+            <ul>
+                <li>קובץ YAML אחד מגדיר את כל השירותים</li>
+                <li>Network משותף אוטומטי</li>
+                <li>פקודה אחת להעלאה: <code>docker-compose up</code></li>
+            </ul>
+        </div>
+        
+        <div class="code-block">
+<pre><code># docker-compose.yml
+version: '3.8'
+services:
+  web:
+    build: .
+    ports:
+      - "5000:5000"
+    depends_on:
+      - db
+    environment:
+      - DB_HOST=db
+  
+  db:
+    image: postgres:13
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_PASSWORD=secret
+
+volumes:
+  db-data:</code></pre>
+        </div>
+        
+        <div class="interview-question">
+            <strong>"מה זה Docker Networking?"</strong>
+        </div>
+        
+        <table>
+            <tr>
+                <th>Network Type</th>
+                <th>תיאור</th>
+                <th>שימוש</th>
+            </tr>
+            <tr>
+                <td><strong>bridge</strong></td>
+                <td>ברירת מחדל - רשת מבודדת</td>
+                <td>Containers על אותו host</td>
+            </tr>
+            <tr>
+                <td><strong>host</strong></td>
+                <td>משתמש ברשת של ה-host</td>
+                <td>ביצועים מקסימליים</td>
+            </tr>
+            <tr>
+                <td><strong>none</strong></td>
+                <td>ללא רשת</td>
+                <td>בידוד מלא</td>
+            </tr>
+            <tr>
+                <td><strong>overlay</strong></td>
+                <td>רשת בין hosts</td>
+                <td>Docker Swarm</td>
+            </tr>
+        </table>
+        
+        <div class="interview-question">
+            <strong>"מה זה Container Auto Restart?"</strong>
+        </div>
+        
+        <div class="answer">
+            מדיניות restart קובעת מה קורה כש-Container נופל:
+            <table>
+                <tr>
+                    <th>Policy</th>
+                    <th>התנהגות</th>
+                </tr>
+                <tr>
+                    <td><code>no</code></td>
+                    <td>לא מפעיל מחדש (ברירת מחדל)</td>
+                </tr>
+                <tr>
+                    <td><code>always</code></td>
+                    <td>תמיד מפעיל מחדש</td>
+                </tr>
+                <tr>
+                    <td><code>on-failure</code></td>
+                    <td>רק אם יצא עם error</td>
+                </tr>
+                <tr>
+                    <td><code>unless-stopped</code></td>
+                    <td>תמיד, חוץ מאם עצרת ידנית</td>
+                </tr>
+            </table>
+        </div>
+        
+        <div class="page-break"></div>
+        
+        <!-- Chapter 26: Kubernetes Scheduling -->
+        <h1>פרק 26: Kubernetes Scheduling</h1>
+        
+        <div class="interview-question">
+            <strong>"מה זה Labels ו-Selectors?"</strong>
+        </div>
+        
+        <div class="answer">
+            <strong>Labels</strong> = תגיות key-value שמוצמדות ל-Resources.
+            <br>
+            <strong>Selectors</strong> = דרך לבחור Resources לפי Labels.
+        </div>
+        
+        <div class="code-block">
+<pre><code># Pod עם Labels
+metadata:
+  labels:
+    app: web
+    env: production
+    tier: frontend
+
+# Service שבוחר לפי Labels
+selector:
+  app: web
+  env: production</code></pre>
+        </div>
+        
+        <div class="interview-question">
+            <strong>"מה זה Taints ו-Tolerations?"</strong>
+        </div>
+        
+        <div class="answer">
+            <strong>Taint</strong> = "רעל" על Node - דוחה Pods.
+            <br>
+            <strong>Toleration</strong> = "חיסון" ל-Pod - מאפשר לו לרוץ על Node עם Taint.
+            <br><br>
+            <em>משל: שלט "כניסה אסורה" (Taint), אישור מיוחד (Toleration)</em>
+        </div>
+        
+        <div class="diagram">
+<pre>
+┌────────────────────────────────────────────────────────────────┐
+│                  TAINTS & TOLERATIONS                          │
+├────────────────────────────────────────────────────────────────┤
+│                                                                │
+│   NODE עם Taint:                   POD בלי Toleration:        │
+│   ┌─────────────────────┐          ┌─────────────┐            │
+│   │ ☠️ gpu=true:NoSchedule │    ❌   │  Web Pod   │            │
+│   │                     │◀─────────│             │            │
+│   │   GPU Node          │  נדחה!   └─────────────┘            │
+│   └─────────────────────┘                                      │
+│                                                                │
+│   NODE עם Taint:                   POD עם Toleration:         │
+│   ┌─────────────────────┐          ┌─────────────┐            │
+│   │ ☠️ gpu=true:NoSchedule │    ✅   │  ML Pod    │            │
+│   │                     │◀─────────│ tolerations:│            │
+│   │   GPU Node          │  מותר!   │ gpu=true   │            │
+│   └─────────────────────┘          └─────────────┘            │
+│                                                                │
+└────────────────────────────────────────────────────────────────┘
+</pre>
+        </div>
+        
+        <div class="interview-question">
+            <strong>"מה זה Node Selector ו-Node Affinity?"</strong>
+        </div>
+        
+        <table>
+            <tr>
+                <th>מושג</th>
+                <th>תיאור</th>
+                <th>גמישות</th>
+            </tr>
+            <tr>
+                <td><strong>Node Selector</strong></td>
+                <td>בחירת Node לפי label פשוט</td>
+                <td>פשוט - רק equality</td>
+            </tr>
+            <tr>
+                <td><strong>Node Affinity</strong></td>
+                <td>בחירת Node עם תנאים מורכבים</td>
+                <td>גמיש - In, NotIn, Exists, Gt, Lt</td>
+            </tr>
+        </table>
+        
+        <div class="code-block">
+<pre><code># Node Selector (פשוט)
+nodeSelector:
+  disktype: ssd
+
+# Node Affinity (מורכב)
+affinity:
+  nodeAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: disktype
+          operator: In
+          values: [ssd, nvme]</code></pre>
+        </div>
+        
+        <div class="interview-question">
+            <strong>"מה זה Pod Affinity ו-Anti-Affinity?"</strong>
+        </div>
+        
+        <div class="answer">
+            <strong>Pod Affinity</strong> = "רוצה לרוץ ליד Pod מסוים"
+            <br>
+            <strong>Pod Anti-Affinity</strong> = "רוצה לרוץ רחוק מ-Pod מסוים"
+            <br><br>
+            <strong>דוגמאות:</strong>
+            <ul>
+                <li><strong>Affinity:</strong> Web עם Cache - קרבה = latency נמוך</li>
+                <li><strong>Anti-Affinity:</strong> 2 replicas של DB - פיזור = HA</li>
+            </ul>
+        </div>
+        
+        <div class="page-break"></div>
+        
+        <!-- Chapter 27: K8s Configuration -->
+        <h1>פרק 27: Kubernetes Configuration</h1>
+        
+        <div class="interview-question">
+            <strong>"מה זה ConfigMap?"</strong>
+        </div>
+        
+        <div class="answer">
+            <strong>ConfigMap</strong> = אחסון configuration לא-רגיש.
+            <ul>
+                <li>Environment variables</li>
+                <li>Configuration files</li>
+                <li>Command-line arguments</li>
+            </ul>
+        </div>
+        
+        <div class="code-block">
+<pre><code># יצירת ConfigMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+data:
+  DATABASE_HOST: "db.example.com"
+  LOG_LEVEL: "debug"
+  config.json: |
+    {
+      "feature_flags": {
+        "dark_mode": true
+      }
+    }
+
+# שימוש ב-Pod
+env:
+  - name: DATABASE_HOST
+    valueFrom:
+      configMapKeyRef:
+        name: app-config
+        key: DATABASE_HOST</code></pre>
+        </div>
+        
+        <div class="interview-question">
+            <strong>"מה זה Secret?"</strong>
+        </div>
+        
+        <div class="answer">
+            <strong>Secret</strong> = אחסון מידע רגיש (מוצפן base64).
+            <ul>
+                <li>Passwords</li>
+                <li>API keys</li>
+                <li>TLS certificates</li>
+            </ul>
+            <strong>⚠️ שים לב:</strong> base64 זה לא הצפנה אמיתית! להשתמש עם External Secrets או Vault.
+        </div>
+        
+        <div class="code-block">
+<pre><code># יצירת Secret
+apiVersion: v1
+kind: Secret
+metadata:
+  name: db-credentials
+type: Opaque
+data:
+  username: YWRtaW4=      # base64 של "admin"
+  password: cGFzc3dvcmQ=  # base64 של "password"
+
+# שימוש ב-Pod
+env:
+  - name: DB_PASSWORD
+    valueFrom:
+      secretKeyRef:
+        name: db-credentials
+        key: password</code></pre>
+        </div>
+        
+        <div class="interview-question">
+            <strong>"מה זה Rolling Update ו-Rollback?"</strong>
+        </div>
+        
+        <div class="answer">
+            <strong>Rolling Update</strong> = עדכון הדרגתי ללא downtime.
+            <br>
+            <strong>Rollback</strong> = חזרה לגרסה קודמת.
+        </div>
+        
+        <div class="diagram">
+<pre>
+┌────────────────────────────────────────────────────────────────┐
+│                     ROLLING UPDATE                             │
+├────────────────────────────────────────────────────────────────┤
+│                                                                │
+│   Step 1:  [v1] [v1] [v1] [v1]     ← 4 pods v1                │
+│                                                                │
+│   Step 2:  [v1] [v1] [v1] [v2]     ← 1 pod updated            │
+│                                                                │
+│   Step 3:  [v1] [v1] [v2] [v2]     ← 2 pods updated           │
+│                                                                │
+│   Step 4:  [v1] [v2] [v2] [v2]     ← 3 pods updated           │
+│                                                                │
+│   Step 5:  [v2] [v2] [v2] [v2]     ← Done! Zero downtime      │
+│                                                                │
+└────────────────────────────────────────────────────────────────┘
+</pre>
+        </div>
+        
+        <div class="code-block">
+<pre><code># Deployment strategy
+spec:
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1        # כמה להוסיף מעל הרצוי
+      maxUnavailable: 0  # כמה יכולים להיות למטה
+
+# פקודות שימושיות
+kubectl rollout status deployment/myapp
+kubectl rollout history deployment/myapp
+kubectl rollout undo deployment/myapp           # rollback
+kubectl rollout undo deployment/myapp --to-revision=2</code></pre>
+        </div>
+        
+        <div class="page-break"></div>
+        
+        <!-- Chapter 28: K8s Networking -->
+        <h1>פרק 28: Kubernetes Networking</h1>
+        
+        <div class="interview-question">
+            <strong>"מה זה CNI?"</strong>
+        </div>
+        
+        <div class="answer">
+            <strong>CNI</strong> (Container Network Interface) = תקן לניהול רשת בקוברנטיס.
+            <br><br>
+            <strong>Plugins נפוצים:</strong>
+            <ul>
+                <li><strong>Calico</strong> - הכי נפוץ, Network Policies</li>
+                <li><strong>Flannel</strong> - פשוט, לא תומך Network Policies</li>
+                <li><strong>Weave</strong> - קל להתקנה</li>
+                <li><strong>AWS VPC CNI</strong> - אינטגרציה עם AWS VPC</li>
+            </ul>
+        </div>
+        
+        <div class="interview-question">
+            <strong>"מה זה CoreDNS?"</strong>
+        </div>
+        
+        <div class="answer">
+            <strong>CoreDNS</strong> = שירות DNS פנימי של הקלאסטר.
+            <ul>
+                <li>מתרגם שמות Services לכתובות IP</li>
+                <li>מאפשר: <code>my-service.my-namespace.svc.cluster.local</code></li>
+                <li>רץ כ-Deployment ב-kube-system</li>
+            </ul>
+        </div>
+        
+        <div class="diagram">
+<pre>
+┌────────────────────────────────────────────────────────────────┐
+│                    K8s DNS Resolution                          │
+├────────────────────────────────────────────────────────────────┤
+│                                                                │
+│   Pod רוצה לפנות ל-"db-service":                              │
+│                                                                │
+│   ┌─────────┐     ┌──────────┐     ┌─────────────┐            │
+│   │   Pod   │────▶│ CoreDNS  │────▶│ db-service  │            │
+│   │         │     │          │     │ 10.96.0.15  │            │
+│   └─────────┘     └──────────┘     └─────────────┘            │
+│        │                                  │                    │
+│        │      "db-service" = ?            │                    │
+│        │                                  │                    │
+│        └──────────────────────────────────┘                    │
+│                    10.96.0.15                                  │
+│                                                                │
+│   DNS Names:                                                   │
+│   • db-service                     (same namespace)            │
+│   • db-service.production          (different namespace)       │
+│   • db-service.production.svc.cluster.local (full)            │
+│                                                                │
+└────────────────────────────────────────────────────────────────┘
+</pre>
+        </div>
+        
+        <div class="interview-question">
+            <strong>"מה זה Network Policy?"</strong>
+        </div>
+        
+        <div class="answer">
+            <strong>Network Policy</strong> = Firewall ברמת ה-Pod.
+            <ul>
+                <li>קובע איזה Traffic מותר נכנס (Ingress)</li>
+                <li>קובע איזה Traffic מותר יוצא (Egress)</li>
+                <li>ברירת מחדל: הכל פתוח!</li>
+            </ul>
+        </div>
+        
+        <div class="code-block">
+<pre><code>apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: db-policy
+spec:
+  podSelector:
+    matchLabels:
+      app: database
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          app: backend    # רק backend יכול לגשת ל-DB
+    ports:
+    - port: 5432</code></pre>
+        </div>
+        
+        <div class="page-break"></div>
+        
+        <!-- Chapter 29: Jenkins -->
+        <h1>פרק 29: Jenkins</h1>
+        
+        <div class="interview-question">
+            <strong>"מה ההבדל בין Freestyle Project ל-Pipeline?"</strong>
+        </div>
+        
+        <table>
+            <tr>
+                <th>מאפיין</th>
+                <th>Freestyle</th>
+                <th>Pipeline</th>
+            </tr>
+            <tr>
+                <td>הגדרה</td>
+                <td>GUI (ממשק)</td>
+                <td>קוד (Jenkinsfile)</td>
+            </tr>
+            <tr>
+                <td>Version Control</td>
+                <td>❌</td>
+                <td>✅ ב-Git</td>
+            </tr>
+            <tr>
+                <td>גמישות</td>
+                <td>מוגבלת</td>
+                <td>מלאה</td>
+            </tr>
+            <tr>
+                <td>Code Review</td>
+                <td>❌</td>
+                <td>✅</td>
+            </tr>
+            <tr>
+                <td>שימוש</td>
+                <td>משימות פשוטות</td>
+                <td>CI/CD מלא</td>
+            </tr>
+        </table>
+        
+        <div class="interview-question">
+            <strong>"מה זה Jenkins Agents/Slaves?"</strong>
+        </div>
+        
+        <div class="answer">
+            <strong>Jenkins Agent</strong> = מכונה שמריצה Jobs.
+            <ul>
+                <li><strong>Master</strong> - מנהל, מתזמן, UI</li>
+                <li><strong>Agent/Slave</strong> - מבצע את העבודה בפועל</li>
+            </ul>
+            <strong>למה?</strong>
+            <ul>
+                <li>פיזור עומסים</li>
+                <li>סביבות שונות (Linux, Windows)</li>
+                <li>בידוד</li>
+            </ul>
+        </div>
+        
+        <div class="interview-question">
+            <strong>"האם יש אפשרות להרצה ידנית בין שלבים בג'נקינס?"</strong>
+        </div>
+        
+        <div class="answer">
+            <strong>כן!</strong> עם <code>input</code> step.
+        </div>
+        
+        <div class="code-block">
+<pre><code>pipeline {
+    agent any
+    stages {
+        stage('Build') {
+            steps {
+                sh 'npm run build'
+            }
+        }
+        stage('Deploy to Prod') {
+            steps {
+                // המתנה לאישור ידני
+                input message: 'Deploy to production?', ok: 'Deploy!'
+                sh './deploy.sh'
+            }
+        }
+    }
+}</code></pre>
+        </div>
+        
+        <div class="interview-question">
+            <strong>"מה זה Jenkins Parameters?"</strong>
+        </div>
+        
+        <div class="answer">
+            <strong>Parameters</strong> = משתנים שהמשתמש מזין לפני הרצת Job.
+        </div>
+        
+        <div class="code-block">
+<pre><code>pipeline {
+    agent any
+    parameters {
+        string(name: 'BRANCH', defaultValue: 'main')
+        choice(name: 'ENV', choices: ['dev', 'staging', 'prod'])
+        booleanParam(name: 'RUN_TESTS', defaultValue: true)
+    }
+    stages {
+        stage('Build') {
+            steps {
+                echo "Building ${params.BRANCH} for ${params.ENV}"
+            }
+        }
+    }
+}</code></pre>
+        </div>
+        
+        <div class="page-break"></div>
+        
+        <!-- Chapter 30: Security & Best Practices -->
+        <h1>פרק 30: Security & Best Practices</h1>
+        
+        <div class="interview-question">
+            <strong>"מה זה SG Referencing?"</strong>
+        </div>
+        
+        <div class="answer">
+            <strong>Security Group Referencing</strong> = התייחסות ל-SG אחר במקום CIDR.
+            <br><br>
+            <strong>במקום:</strong> "אפשר גישה מ-10.0.0.0/24"
+            <br>
+            <strong>אפשר:</strong> "אפשר גישה רק ממי שיש לו SG-XYZ"
+            <br><br>
+            <strong>יתרון:</strong> יותר מאובטח, יותר דינמי
+        </div>
+        
+        <div class="diagram">
+<pre>
+┌────────────────────────────────────────────────────────────────┐
+│                    SG REFERENCING                              │
+├────────────────────────────────────────────────────────────────┤
+│                                                                │
+│   ❌ רגיל (CIDR):                                             │
+│   ┌─────────────────┐         ┌─────────────────┐             │
+│   │ ALB             │         │ K8s Nodes       │             │
+│   │ SG: sg-alb      │────────▶│ SG: sg-k8s      │             │
+│   │                 │ allow   │ Inbound:        │             │
+│   │ 10.0.1.5        │ 10.0.0.0/16  10.0.0.0/16 │             │
+│   └─────────────────┘         └─────────────────┘             │
+│   כל ה-VPC יכול לגשת! 🔴                                       │
+│                                                                │
+│   ✅ SG Referencing:                                          │
+│   ┌─────────────────┐         ┌─────────────────┐             │
+│   │ ALB             │         │ K8s Nodes       │             │
+│   │ SG: sg-alb      │────────▶│ SG: sg-k8s      │             │
+│   │                 │ allow   │ Inbound:        │             │
+│   │                 │ sg-alb  │ sg-alb only     │             │
+│   └─────────────────┘         └─────────────────┘             │
+│   רק ה-ALB יכול לגשת! 🟢                                       │
+│                                                                │
+└────────────────────────────────────────────────────────────────┘
+</pre>
+        </div>
+        
+        <div class="interview-question">
+            <strong>"איך נדאג ל-OIDC בין GitHub ל-AWS?"</strong>
+        </div>
+        
+        <div class="answer">
+            <strong>OIDC</strong> (OpenID Connect) = אימות בלי Access Keys!
+            <br><br>
+            <strong>שלבים:</strong>
+            <ol>
+                <li>יצירת Identity Provider ב-AWS (GitHub)</li>
+                <li>יצירת IAM Role עם Trust Policy ל-GitHub</li>
+                <li>בWorkflow: <code>aws-actions/configure-aws-credentials</code></li>
+            </ol>
+            <strong>יתרון:</strong> אין secrets לנהל!
+        </div>
+        
+        <div class="code-block">
+<pre><code># GitHub Actions workflow
+- name: Configure AWS Credentials
+  uses: aws-actions/configure-aws-credentials@v4
+  with:
+    role-to-assume: arn:aws:iam::123456789:role/GitHubActions
+    aws-region: us-east-1</code></pre>
+        </div>
+        
+        <div class="interview-question">
+            <strong>"מה ההבדל בין GitLab ל-GitHub?"</strong>
+        </div>
+        
+        <table>
+            <tr>
+                <th>מאפיין</th>
+                <th>GitHub</th>
+                <th>GitLab</th>
+            </tr>
+            <tr>
+                <td>CI/CD</td>
+                <td>GitHub Actions</td>
+                <td>GitLab CI (מובנה יותר)</td>
+            </tr>
+            <tr>
+                <td>Self-hosted</td>
+                <td>Enterprise (יקר)</td>
+                <td>Community Edition (חינם)</td>
+            </tr>
+            <tr>
+                <td>Container Registry</td>
+                <td>GitHub Packages</td>
+                <td>מובנה</td>
+            </tr>
+            <tr>
+                <td>DevOps Platform</td>
+                <td>אינטגרציות</td>
+                <td>All-in-one</td>
+            </tr>
+        </table>
+        
+        <div class="interview-question">
+            <strong>"מה זה Vertical Scaling vs Horizontal Scaling?"</strong>
+        </div>
+        
+        <table>
+            <tr>
+                <th>Vertical (Scale Up)</th>
+                <th>Horizontal (Scale Out)</th>
+            </tr>
+            <tr>
+                <td>להוסיף כח למכונה</td>
+                <td>להוסיף עוד מכונות</td>
+            </tr>
+            <tr>
+                <td>יותר CPU, RAM</td>
+                <td>עוד instances/pods</td>
+            </tr>
+            <tr>
+                <td>יש גבול פיזי</td>
+                <td>כמעט ללא גבול</td>
+            </tr>
+            <tr>
+                <td>פשוט יותר</td>
+                <td>דורש Load Balancing</td>
+            </tr>
+            <tr>
+                <td>Databases</td>
+                <td>Stateless apps</td>
+            </tr>
+        </table>
+        
+        <div class="diagram">
+<pre>
+┌────────────────────────────────────────────────────────────────┐
+│              SCALING COMPARISON                                │
+├────────────────────────────────────────────────────────────────┤
+│                                                                │
+│   VERTICAL:                      HORIZONTAL:                   │
+│                                                                │
+│   Before:        After:          Before:        After:         │
+│   ┌──────┐      ┌────────┐       ┌──────┐      ┌──────┐       │
+│   │ 2CPU │      │  8CPU  │       │Server│      │Server│       │
+│   │ 4GB  │  →   │  32GB  │       │      │      │      │       │
+│   │      │      │        │       └──────┘  →   ├──────┤       │
+│   └──────┘      └────────┘                     │Server│       │
+│                                                │      │       │
+│   Same machine,                  ├──────┤       │       │
+│   more power                     │Server│                     │
+│                                  └──────┘                     │
+│                                  More machines                │
+│                                                                │
+└────────────────────────────────────────────────────────────────┘
+</pre>
+        </div>
+        
+        <!-- Final Summary -->
+        <h1>סיכום סופי</h1>
+        
+        <div class="info-box" style="background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%); border-color: #10b981;">
+            <strong>✅ נושאים שכיסינו במדריך:</strong>
+            <br><br>
+            <table>
+                <tr>
+                    <td>☁️ AWS VPC & Networking</td>
+                    <td>🔐 IAM & Security</td>
+                </tr>
+                <tr>
+                    <td>💾 Storage (EBS, EFS, S3)</td>
+                    <td>🖥️ Compute (EC2, Lambda)</td>
+                </tr>
+                <tr>
+                    <td>⚖️ Load Balancing</td>
+                    <td>🌐 DNS & CDN</td>
+                </tr>
+                <tr>
+                    <td>🗄️ Databases</td>
+                    <td>☸️ Kubernetes Deep Dive</td>
+                </tr>
+                <tr>
+                    <td>📦 Helm</td>
+                    <td>🔄 CI/CD</td>
+                </tr>
+                <tr>
+                    <td>🏗️ Terraform</td>
+                    <td>🏛️ Architecture</td>
+                </tr>
+                <tr>
+                    <td>📊 Monitoring</td>
+                    <td>🎯 Scenarios</td>
+                </tr>
+            </table>
+        </div>
+        
+        <div style="text-align: center; margin-top: 60px; padding: 40px; background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); color: white; border-radius: 20px;">
+            <h2 style="color: white; border: none; margin: 0;">בהצלחה בראיון! 🚀</h2>
+            <p style="margin-top: 15px; opacity: 0.9;">זכור: עדיף להגיד "אני לא בטוח, אבל הייתי בודק ככה..." מאשר להמציא תשובה</p>
+        </div>
+        
+    </div>
+</body>
+</html>
