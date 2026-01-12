@@ -1775,31 +1775,90 @@ docker run -v /home/user/code:/app myapp
 
 ---
 
-## פרק 26: Kubernetes Scheduling
+## פרק 26: Kubernetes Scheduling - מנגנוני תזמון
 
 ### ❓ "Labels ו-Selectors?"
 
 **Labels** = תגיות key-value על Resources.
 **Selectors** = בחירת Resources לפי Labels.
 
+```yaml
+# Label על Pod
+metadata:
+  labels:
+    app: my-app
+    env: production
+
+# Selector ב-Service שבוחר Pods
+selector:
+  app: my-app
+```
+
 ### ❓ "Taints ו-Tolerations?"
 
-**Taint** = "רעל" על Node - דוחה Pods.
-**Toleration** = "חיסון" ל-Pod - מאפשר לו לרוץ.
+**Taint** = "רעל" על Node - דוחה Pods (אלא אם יש להם Toleration).
+**Toleration** = "חיסון" ל-Pod - מאפשר לו לרוץ על Node עם Taint.
 
 *משל: שלט "כניסה אסורה" (Taint), אישור מיוחד (Toleration)*
 
-### ❓ "Node Selector vs Node Affinity?"
+**3 Effects של Taint:**
+| Effect | התנהגות | Pods קיימים |
+|--------|---------|-------------|
+| NoSchedule | חדשים לא יתוזמנו | נשארים |
+| PreferNoSchedule | ינסה להימנע | נשארים |
+| NoExecute | חדשים לא יתוזמנו | **יוסרו!** |
 
-| מושג | תיאור | גמישות |
-|------|-------|--------|
-| **Node Selector** | label פשוט | equality בלבד |
-| **Node Affinity** | תנאים מורכבים | In, NotIn, Gt, Lt |
+**Operators:**
+- `Equal` = key=value חייב להתאים בדיוק
+- `Exists` = רק ה-key חשוב
+
+### ❓ "מה זה Node Selector?"
+
+הדרך הפשוטה לבחור Node לפי Labels.
+
+**מה זה "equality בלבד"?**
+Node Selector תומך **רק** בהשוואת שוויון:
+- ✅ `disktype: ssd` (שווה ל)
+- ❌ `disktype ב-[ssd, nvme]` (IN)
+- ❌ `memory > 16GB` (גדול מ)
+
+```yaml
+nodeSelector:
+  disktype: ssd    # = disktype שווה בדיוק ל-ssd
+```
+
+### ❓ "מה זה Node Affinity?"
+
+גרסה מתקדמת עם **כל הoperators**:
+
+| Operator | משמעות | דוגמה |
+|----------|--------|-------|
+| **In** | ערך מתוך רשימה | [ssd, nvme] |
+| **NotIn** | לא מתוך רשימה | [hdd] |
+| **Exists** | ה-key קיים | "יש label בשם gpu" |
+| **DoesNotExist** | ה-key לא קיים | "אין label בשם spot" |
+| **Gt** | גדול מ | memory > 16000 |
+| **Lt** | קטן מ | memory < 64000 |
+
+**שני סוגים:**
+- `required...` = חובה
+- `preferred...` = עדיף
 
 ### ❓ "Pod Affinity vs Anti-Affinity?"
 
-**Affinity** = "רוצה ליד Pod מסוים" (Web + Cache)
-**Anti-Affinity** = "רוצה רחוק מ-Pod" (DB replicas - HA)
+**Pod Affinity** = "רוץ על Node שיש עליו Pod מסוים"
+```
+שימוש: Web server ליד Cache (latency נמוך)
+```
+
+**Pod Anti-Affinity** = "רוץ על Node שאין עליו Pod מסוים"
+```
+שימוש: DB replicas על Nodes שונים (HA)
+```
+
+**topologyKey** = באיזה "domain":
+- `kubernetes.io/hostname` = אותו Node
+- `topology.kubernetes.io/zone` = אותו AZ
 
 ---
 
@@ -2498,21 +2557,134 @@ env:
 
 ---
 
-### DaemonSet
+### DaemonSet - הסבר מקיף
 
-**מה זה:** מבטיח שPod אחד רץ על כל Node.
+**איך הייתי עונה בראיון:**
 
-**שימושים:**
-- Logging agents (Fluentd)
-- Monitoring agents (Prometheus Node Exporter)
-- Storage daemons
-- Network plugins
+"DaemonSet הוא סוג של Workload בקוברנטיס שמבטיח ש-Pod אחד (ורק אחד!) ירוץ על כל Node בקלאסטר. זה שונה לגמרי מ-Deployment רגיל.
+
+---
+
+**הבעיה שזה פותר:**
+
+יש תוכנות שחייבות לרוץ על כל שרת בקלאסטר - למשל:
+- **Logging agent** (Fluentd, Filebeat) - אוסף לוגים מכל ה-Nodes
+- **Monitoring agent** (Node Exporter, Datadog) - אוסף metrics מכל ה-Nodes
+- **Storage daemon** (Ceph, GlusterFS) - מנהל אחסון על כל Node
+- **Network plugin** (Calico, Cilium) - מנהל רשת על כל Node
+- **Security agent** (Falco) - מנטר אירועי אבטחה
+
+כל אלה חייבים לרוץ על **כל** Node, לא רק על חלק.
+
+---
+
+**איך עובד:**
+
+```
+Kubernetes Cluster
+├── Node 1: [DaemonSet Pod] ← אוטומטי
+├── Node 2: [DaemonSet Pod] ← אוטומטי
+├── Node 3: [DaemonSet Pod] ← אוטומטי
+└── Node 4 (חדש): [DaemonSet Pod] ← נוצר אוטומטית כשה-Node מצטרף!
+```
+
+**נקודות חשובות:**
+- כש-Node חדש מצטרף לקלאסטר → Pod נוצר אוטומטית
+- כש-Node עוזב את הקלאסטר → Pod נמחק אוטומטית
+- לא עובר דרך Scheduler רגיל (ה-DaemonSet Controller מנהל את זה)
+
+---
 
 **הבדל מ-Deployment:**
-| Deployment | DaemonSet |
-|------------|-----------|
-| X replicas איפשהו | Pod אחד על כל Node |
-| Scheduler מחליט | Node = Pod |
+
+| מאפיין | Deployment | DaemonSet |
+|--------|------------|-----------|
+| **כמה Pods** | מספר קבוע (replicas: 3) | Pod אחד על כל Node |
+| **איפה** | Scheduler מחליט | כל Node |
+| **Scaling** | ידני/HPA | אוטומטי (לפי כמות Nodes) |
+| **מטרה** | אפליקציות רגילות | System-level services |
+| **Node חדש** | לא רלוונטי | Pod נוצר אוטומטית |
+
+---
+
+**דוגמה - DaemonSet ל-Logging:**
+
+```yaml
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: fluentd-logging
+  namespace: kube-system        # ← System namespace!
+  labels:
+    k8s-app: fluentd-logging
+
+spec:
+  selector:
+    matchLabels:
+      name: fluentd-logging
+  
+  template:
+    metadata:
+      labels:
+        name: fluentd-logging
+    spec:
+      # ═══════════════════════════════════════════════════════════
+      # Tolerations - רץ גם על Master nodes!
+      # ═══════════════════════════════════════════════════════════
+      tolerations:
+      - key: node-role.kubernetes.io/control-plane
+        effect: NoSchedule
+      # בלי זה, לא ירוץ על Master nodes
+      
+      containers:
+      - name: fluentd
+        image: fluentd:v1.14
+        
+        # ═══════════════════════════════════════════════════════════
+        # Volume Mounts - גישה ללוגים של ה-Node
+        # ═══════════════════════════════════════════════════════════
+        volumeMounts:
+        - name: varlog
+          mountPath: /var/log          # לוגים של ה-Node
+        - name: containers
+          mountPath: /var/lib/docker/containers
+          readOnly: true               # רק קריאה!
+      
+      volumes:
+      - name: varlog
+        hostPath:
+          path: /var/log               # ← תיקייה מה-Node עצמו
+      - name: containers
+        hostPath:
+          path: /var/lib/docker/containers
+```
+
+---
+
+**מתי להשתמש ב-DaemonSet:**
+
+| Use Case | למה DaemonSet |
+|----------|---------------|
+| Log collection | חייב לאסוף מכל Node |
+| Node monitoring | חייב לדגום כל Node |
+| Storage | חייב לנהל דיסקים בכל Node |
+| Network | CNI חייב להיות בכל Node |
+| Security scanning | חייב לסרוק כל Node |
+
+---
+
+**מתי לא להשתמש:**
+- אפליקציות רגילות → Deployment
+- Stateful apps → StatefulSet
+- Jobs חד-פעמיים → Job/CronJob
+
+**פקודות שימושיות:**
+
+```bash
+kubectl get daemonsets -A              # כל ה-DaemonSets בכל namespaces
+kubectl describe daemonset fluentd     # פרטים על DaemonSet ספציפי
+kubectl get pods -l name=fluentd -o wide  # איפה רצים ה-Pods
+```
 
 ---
 
@@ -2719,33 +2891,327 @@ kubectl get pods --all-namespaces
 
 ---
 
-### Node Affinity & Pod Affinity
+### Node Selector, Node Affinity & Pod Affinity - הסבר מקיף
 
-**Node Selector (פשוט):**
+**איך הייתי עונה בראיון:**
+
+"Node Selector ו-Node Affinity הם דרכים להגיד ל-Kubernetes 'אני רוצה לרוץ על Node מסוים'. ההבדל הוא ברמת הגמישות והתנאים שאפשר להגדיר.
+
+---
+
+## 1️⃣ Node Selector - פשוט אבל מוגבל
+
+**מה זה:**
+הדרך הכי פשוטה לבחור Node לפי Label.
+
+**איך עובד:**
 ```yaml
-nodeSelector:
-  disktype: ssd
+spec:
+  nodeSelector:
+    disktype: ssd
+```
+**משמעות:** "רוץ רק על Node שיש לו label: `disktype=ssd`"
+
+---
+
+**למה אומרים 'equality בלבד'?**
+
+Node Selector תומך רק בהשוואת **שוויון** (equality):
+- ✅ `disktype: ssd` → "disktype שווה ל-ssd"
+- ✅ `zone: us-east-1a` → "zone שווה ל-us-east-1a"
+
+**מה אי אפשר עם Node Selector:**
+- ❌ "disktype שווה ל-ssd **או** nvme"
+- ❌ "zone לא שווה ל-us-west"
+- ❌ "memory גדול מ-16GB"
+- ❌ "יש לו label כלשהו בשם gpu" (בלי ערך ספציפי)
+
+**לכל אלה צריך Node Affinity!**
+
+---
+
+**דוגמה מלאה:**
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: db-pod
+spec:
+  containers:
+  - name: postgres
+    image: postgres:15
+  
+  # ═══════════════════════════════════════════════════════════
+  # Node Selector - פשוט
+  # ═══════════════════════════════════════════════════════════
+  nodeSelector:
+    disktype: ssd          # חייב להיות בדיוק ssd
+    tier: database         # אפשר כמה labels (AND)
 ```
 
-**Node Affinity (מתקדם):**
+**מתי להשתמש:**
+- כשיש תנאי פשוט וברור
+- כשרוצים קוד קצר וקריא
+- כשאין צורך בגמישות
+
+---
+
+## 2️⃣ Node Affinity - גמיש ועוצמתי
+
+**מה זה:**
+גרסה מתקדמת יותר של Node Selector עם תמיכה בתנאים מורכבים.
+
+---
+
+**הOperators - סוגי ההשוואה:**
+
+| Operator | משמעות | דוגמה |
+|----------|--------|-------|
+| **In** | ערך נמצא ברשימה | `values: [ssd, nvme]` - או ssd או nvme |
+| **NotIn** | ערך לא נמצא ברשימה | `values: [hdd]` - לא hdd |
+| **Exists** | ה-key קיים (לא חשוב מה הערך) | "יש label בשם gpu" |
+| **DoesNotExist** | ה-key לא קיים | "אין label בשם spot" |
+| **Gt** | Greater than (גדול מ) | memory > 16 |
+| **Lt** | Less than (קטן מ) | memory < 64 |
+
+---
+
+**דוגמאות לכל Operator:**
+
+**In - ערך מתוך רשימה:**
 ```yaml
-affinity:
-  nodeAffinity:
-    requiredDuringSchedulingIgnoredDuringExecution:
-      nodeSelectorTerms:
-      - matchExpressions:
-        - key: disktype
-          operator: In
-          values: [ssd, nvme]
+- key: disktype
+  operator: In
+  values:
+  - ssd
+  - nvme
+# disktype == ssd OR disktype == nvme
 ```
 
-**Pod Affinity:**
-"רוץ על Node שיש עליו Pod עם label מסוים"
-שימוש: Web server ליד Cache
+**NotIn - לא מתוך רשימה:**
+```yaml
+- key: zone
+  operator: NotIn
+  values:
+  - us-west-1
+  - us-west-2
+# zone != us-west-1 AND zone != us-west-2
+```
 
-**Pod Anti-Affinity:**
-"רוץ על Node שאין עליו Pod עם label מסוים"
-שימוש: DB replicas על Nodes שונים (HA)
+**Exists - ה-key קיים:**
+```yaml
+- key: gpu
+  operator: Exists
+# יש label בשם 'gpu', לא חשוב מה הערך
+# עובד גם ל: gpu=nvidia, gpu=amd, gpu=true
+```
+
+**DoesNotExist - ה-key לא קיים:**
+```yaml
+- key: spot-instance
+  operator: DoesNotExist
+# אין label בשם 'spot-instance'
+# = לא Spot Instance, רק On-Demand
+```
+
+**Gt / Lt - השוואות מספריות:**
+```yaml
+- key: node.kubernetes.io/instance-memory
+  operator: Gt
+  values:
+  - "16000"   # memory > 16GB (ב-MB)
+```
+
+---
+
+**שני סוגי Affinity:**
+
+| סוג | משמעות | אם אין Node מתאים |
+|-----|--------|-------------------|
+| **requiredDuringSchedulingIgnoredDuringExecution** | חובה! | Pod לא יתוזמן |
+| **preferredDuringSchedulingIgnoredDuringExecution** | עדיף | Pod יתוזמן במקום אחר |
+
+**"IgnoredDuringExecution"** = אם Pod כבר רץ והלייבלים השתנו, הוא לא יוסר.
+
+---
+
+**דוגמה מלאה - Required:**
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: ml-training
+spec:
+  containers:
+  - name: training
+    image: tensorflow/tensorflow:latest-gpu
+  
+  affinity:
+    nodeAffinity:
+      # ═══════════════════════════════════════════════════════
+      # REQUIRED - חייב להתקיים!
+      # ═══════════════════════════════════════════════════════
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          # תנאי 1: חייב להיות GPU
+          - key: accelerator-type
+            operator: In
+            values:
+            - nvidia-tesla-v100
+            - nvidia-tesla-a100
+          # תנאי 2: לא Spot Instance
+          - key: node.kubernetes.io/lifecycle
+            operator: NotIn
+            values:
+            - spot
+          # כל התנאים חייבים להתקיים (AND)
+```
+
+---
+
+**דוגמה מלאה - Preferred:**
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: web-app
+spec:
+  containers:
+  - name: app
+    image: my-app
+  
+  affinity:
+    nodeAffinity:
+      # ═══════════════════════════════════════════════════════
+      # PREFERRED - עדיף, אבל לא חובה
+      # ═══════════════════════════════════════════════════════
+      preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100          # עדיפות 1-100 (גבוה = יותר חשוב)
+        preference:
+          matchExpressions:
+          - key: zone
+            operator: In
+            values:
+            - us-east-1a    # עדיף zone הזה
+      - weight: 50           # פחות חשוב
+        preference:
+          matchExpressions:
+          - key: disktype
+            operator: In
+            values:
+            - ssd           # עדיף SSD, אבל OK גם בלי
+```
+
+---
+
+## 3️⃣ Pod Affinity & Pod Anti-Affinity
+
+**מה זה:**
+במקום לבחור Node לפי labels של Node, בוחרים לפי **Pods אחרים שרצים על Node**.
+
+---
+
+**Pod Affinity - "רוץ ליד Pod מסוים"**
+
+**Use Case:** Web server רוצה לרוץ ליד Cache (Redis) לביצועים טובים יותר.
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: web-server
+spec:
+  containers:
+  - name: web
+    image: nginx
+  
+  affinity:
+    podAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+      - labelSelector:
+          matchExpressions:
+          - key: app
+            operator: In
+            values:
+            - redis
+            - memcached
+        topologyKey: kubernetes.io/hostname
+        # topologyKey = באיזה "domain" להסתכל
+        # hostname = אותו Node
+        # zone = אותו AZ
+```
+
+**משמעות:** "רוץ על Node שיש עליו Pod עם label `app=redis` או `app=memcached`"
+
+---
+
+**Pod Anti-Affinity - "רוץ רחוק מ-Pod מסוים"**
+
+**Use Case:** Database replicas צריכים להיות על Nodes שונים (HA).
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: db-replica
+  labels:
+    app: postgres
+    role: replica
+spec:
+  containers:
+  - name: postgres
+    image: postgres:15
+  
+  affinity:
+    podAntiAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+      - labelSelector:
+          matchLabels:
+            app: postgres    # לא ליד Pods עם app=postgres
+        topologyKey: kubernetes.io/hostname
+        # לא על אותו Node עם postgres אחר
+```
+
+**משמעות:** "אל תרוץ על Node שכבר יש עליו Pod עם label `app=postgres`"
+
+---
+
+**topologyKey - מה זה?**
+
+| topologyKey | משמעות | Use Case |
+|-------------|--------|----------|
+| `kubernetes.io/hostname` | אותו Node | Co-location |
+| `topology.kubernetes.io/zone` | אותו AZ | Availability |
+| `topology.kubernetes.io/region` | אותו Region | Latency |
+
+---
+
+## סיכום - מתי להשתמש במה
+
+| צורך | פתרון |
+|------|-------|
+| תנאי פשוט (ssd=true) | Node Selector |
+| תנאי עם OR (ssd או nvme) | Node Affinity עם In |
+| תנאי שלילי (לא spot) | Node Affinity עם NotIn |
+| בדיקת קיום label | Node Affinity עם Exists |
+| רוץ ליד Pod אחר | Pod Affinity |
+| רוץ רחוק מ-Pod אחר | Pod Anti-Affinity |
+| דחיית Pods מ-Node | Taints |
+
+---
+
+**טבלת השוואה:**
+
+| מאפיין | Node Selector | Node Affinity | Pod Affinity |
+|--------|--------------|---------------|--------------|
+| **תנאים** | equality בלבד | In, NotIn, Exists, Gt, Lt | כמו Affinity |
+| **חובה/עדיף** | חובה | שניהם | שניהם |
+| **מסתכל על** | Labels של Node | Labels של Node | Labels של Pods |
+| **מורכבות** | פשוט | בינוני | מורכב |
 
 ---
 
@@ -3072,32 +3538,223 @@ spec:
 
 ---
 
-### Taints & Tolerations
+### Taints & Tolerations - הסבר מקיף
 
-**Taint (על Node):**
-"אל תשים עלי Pods (אלא אם יש להם Toleration)"
+**איך הייתי עונה בראיון:**
 
-```bash
-kubectl taint nodes node1 gpu=true:NoSchedule
+"Taints ו-Tolerations הם מנגנון שמאפשר ל-Node להגיד 'אני לא רוצה Pods רגילים' ול-Pod להגיד 'אני מיוחד, אני יכול לרוץ שם בכל זאת'.
+
+---
+
+**הבעיה שזה פותר:**
+
+נניח שיש לי קלאסטר עם 10 Nodes:
+- 8 Nodes רגילים לאפליקציות
+- 2 Nodes עם GPU (יקרים!)
+
+אני רוצה שרק עבודות Machine Learning ירוצו על ה-GPU Nodes.
+בלי Taints - Scheduler ישים שם גם Pods רגילים ויבזבז את ה-GPU.
+
+---
+
+**הקונספט - דחיפה ומשיכה:**
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                                                                          │
+│   TAINT על Node = 'רעל' = דוחה Pods                                     │
+│                                                                          │
+│   TOLERATION על Pod = 'חיסון' = מאפשר לרוץ על Node עם Taint             │
+│                                                                          │
+│   ⚠️ חשוב: Toleration לא מושך Pod ל-Node!                               │
+│      הוא רק מאפשר אם ה-Scheduler בחר בו.                                 │
+│      למשיכה - צריך Node Affinity!                                        │
+│                                                                          │
+└─────────────────────────────────────────────────────────────────────────┘
 ```
 
-**Toleration (על Pod):**
-"אני יכול לרוץ על Node עם Taint"
+---
+
+**משל:**
+
+```
+Node = מועדון VIP
+Taint = שומר בדלת: "רק חברי מועדון!"
+Pod רגיל = מגיע ונדחה
+Pod עם Toleration = יש לו כרטיס חבר, נכנס
+```
+
+---
+
+**שלושת ה-Effects - מה קורה כשאין Toleration:**
+
+| Effect | משמעות | מה קורה ל-Pods חדשים | מה קורה ל-Pods קיימים |
+|--------|--------|---------------------|---------------------|
+| **NoSchedule** | אסור לשבץ | ❌ לא יתוזמנו לכאן | ✅ נשארים (לא נפגעים) |
+| **PreferNoSchedule** | עדיף לא | ⚠️ ינסה להימנע, אבל אם אין ברירה - יתוזמנו | ✅ נשארים |
+| **NoExecute** | הכי חזק! | ❌ לא יתוזמנו | ❌ יוסרו! (eviction) |
+
+---
+
+**דוגמה מעשית - GPU Nodes:**
+
+**שלב 1: הוספת Taint ל-Node**
+
+```bash
+# הוסף taint ל-GPU node
+kubectl taint nodes gpu-node-1 gpu=true:NoSchedule
+#                   └── שם    └── key=value:effect
+
+# בדוק שה-Taint נוסף
+kubectl describe node gpu-node-1 | grep Taints
+# Taints: gpu=true:NoSchedule
+```
+
+**שלב 2: Pod רגיל - לא יכול לרוץ:**
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: regular-app
+spec:
+  containers:
+  - name: app
+    image: nginx
+# אין tolerations → Scheduler ידלג על gpu-node-1
+```
+
+**שלב 3: Pod עם Toleration - יכול לרוץ:**
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: ml-training
+spec:
+  containers:
+  - name: ml
+    image: tensorflow/tensorflow:latest-gpu
+  
+  # ═══════════════════════════════════════════════════════════
+  # Tolerations - "אני יכול לרוץ על Nodes עם Taint"
+  # ═══════════════════════════════════════════════════════════
+  tolerations:
+  - key: "gpu"              # ה-key של ה-Taint
+    operator: "Equal"       # סוג ההשוואה
+    value: "true"           # ה-value של ה-Taint
+    effect: "NoSchedule"    # ה-effect של ה-Taint
+```
+
+---
+
+**Operators - סוגי השוואה:**
+
+| Operator | משמעות | דוגמה |
+|----------|--------|-------|
+| **Equal** | key=value חייב להתאים בדיוק | `key: gpu, value: "true"` |
+| **Exists** | רק ה-key חשוב, לא ה-value | `key: gpu` (בלי value) |
+
+**דוגמה ל-Exists:**
 
 ```yaml
 tolerations:
 - key: "gpu"
-  operator: "Equal"
-  value: "true"
+  operator: "Exists"        # לא חשוב מה ה-value
   effect: "NoSchedule"
+
+# זה יעבוד גם עבור:
+# - gpu=true:NoSchedule
+# - gpu=nvidia:NoSchedule
+# - gpu=:NoSchedule (ערך ריק)
 ```
 
-**Effects:**
-| Effect | התנהגות |
-|--------|---------|
-| NoSchedule | לא ישים Pods חדשים |
-| PreferNoSchedule | ינסה לא לשים |
-| NoExecute | יסיר Pods קיימים! |
+---
+
+**NoExecute ו-tolerationSeconds:**
+
+NoExecute הוא מיוחד - הוא מסיר גם Pods קיימים!
+אבל אפשר לתת להם זמן לסיים:
+
+```yaml
+tolerations:
+- key: "node.kubernetes.io/unreachable"
+  operator: "Exists"
+  effect: "NoExecute"
+  tolerationSeconds: 300    # המתן 5 דקות לפני eviction
+```
+
+**Use Case:** כש-Node נעשה unreachable, קוברנטיס מוסיף Taint אוטומטית.
+עם tolerationSeconds אפשר לתת ל-Pods זמן לפני שנזרקים.
+
+---
+
+**Built-in Taints של קוברנטיס:**
+
+| Taint | מתי נוסף | משמעות |
+|-------|---------|--------|
+| `node.kubernetes.io/not-ready` | Node לא מוכן | בעיות בריאות |
+| `node.kubernetes.io/unreachable` | אין תקשורת עם Node | רשת/קריסה |
+| `node.kubernetes.io/memory-pressure` | מעט זיכרון | Node עמוס |
+| `node.kubernetes.io/disk-pressure` | מעט דיסק | Node עמוס |
+| `node.kubernetes.io/pid-pressure` | מעט PIDs | הרבה processes |
+| `node.kubernetes.io/network-unavailable` | רשת לא זמינה | בעיות CNI |
+| `node-role.kubernetes.io/control-plane` | Master node | לא להריץ workloads |
+
+---
+
+**דוגמה מלאה - הרצת DaemonSet על כל Nodes כולל Masters:**
+
+```yaml
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: monitoring-agent
+spec:
+  selector:
+    matchLabels:
+      name: monitoring
+  template:
+    metadata:
+      labels:
+        name: monitoring
+    spec:
+      tolerations:
+      # Tolerate הכל - רץ על כל Node!
+      - operator: "Exists"
+      # זה אומר: "אני סובל כל Taint"
+      
+      containers:
+      - name: agent
+        image: datadog/agent
+```
+
+---
+
+**פקודות שימושיות:**
+
+```bash
+# הוסף Taint
+kubectl taint nodes node1 key=value:NoSchedule
+
+# הסר Taint (שים לב למינוס בסוף!)
+kubectl taint nodes node1 key=value:NoSchedule-
+
+# ראה את כל ה-Taints על Node
+kubectl describe node node1 | grep -A5 Taints
+
+# הוסף כמה Taints בבת אחת
+kubectl taint nodes node1 dedicated=gpu:NoSchedule tier=premium:PreferNoSchedule
+```
+
+---
+
+**Best Practices:**
+
+1. **השתמש ב-Taints ל-isolation** - GPU nodes, dedicated nodes
+2. **שלב עם Node Affinity** - Taint דוחה, Affinity מושך
+3. **תן tolerationSeconds ל-NoExecute** - graceful eviction
+4. **DaemonSets צריכים Tolerations** - אחרת לא יגיעו לכל ה-Nodes
 
 ---
 
