@@ -1857,6 +1857,1263 @@ input message: 'Deploy?', ok: 'Deploy!'
 
 ---
 
+---
+
+# 📚 מילון מושגים מפורט - A-Z
+
+> **חיפוש מהיר:** Ctrl+F ← הקלד את המושג
+
+---
+
+## ☁️ AWS - Amazon Web Services
+
+---
+
+### ACM (AWS Certificate Manager)
+
+**מה זה:** שירות לניהול תעודות SSL/TLS.
+
+**עלות:** חינם לשירותי AWS!
+
+**מאפיינים:**
+- חידוש אוטומטי
+- תומך wildcard certificates
+- אינטגרציה עם ALB, CloudFront, API Gateway
+
+**⚠️ מגבלה:** לא עובד ישירות עם EC2 - צריך לשים מאחורי ALB.
+
+**פקודה:**
+```bash
+aws acm request-certificate --domain-name example.com
+```
+
+---
+
+### ALB (Application Load Balancer)
+
+**מה זה:** Load Balancer ברמת Layer 7 (HTTP/HTTPS).
+
+**יכולות:**
+- Path-based routing (`/api` → service A, `/web` → service B)
+- Host-based routing (`api.example.com` → service A)
+- WebSocket support
+- HTTP/2 support
+- Integration עם WAF
+
+**מתי להשתמש:**
+- Web applications
+- Microservices
+- Container-based apps
+
+**לעומת NLB:**
+| ALB | NLB |
+|-----|-----|
+| Layer 7 | Layer 4 |
+| HTTP/HTTPS | TCP/UDP |
+| Path routing | Port routing |
+| איטי יותר | מהיר מאוד |
+
+---
+
+### Auto Scaling Group (ASG)
+
+**מה זה:** קבוצת EC2 instances שגדלה וקטנה אוטומטית.
+
+**הגדרות:**
+- **Minimum:** מינימום instances (לא יורד מזה)
+- **Maximum:** מקסימום instances (לא עולה מזה)
+- **Desired:** כמות רצויה נוכחית
+
+**Scaling Policies:**
+| סוג | איך עובד |
+|-----|----------|
+| Target Tracking | "שמור על 70% CPU" |
+| Step Scaling | "אם CPU > 80% הוסף 2" |
+| Scheduled | "בשעה 9 בבוקר הוסף 5" |
+
+**דוגמה:**
+```
+Min: 2, Max: 10, Desired: 4
+CPU > 70% → Desired: 6
+CPU < 30% → Desired: 3
+```
+
+---
+
+### CloudFront
+
+**מה זה:** CDN (Content Delivery Network) של AWS.
+
+**איך עובד:**
+1. משתמש מבקש קובץ
+2. CloudFront בודק אם יש ב-Edge Location הקרוב
+3. אם יש (Cache Hit) → מחזיר מיד
+4. אם אין (Cache Miss) → מביא מה-Origin, שומר, מחזיר
+
+**יתרונות:**
+- Latency נמוך (200+ Edge Locations)
+- DDoS protection מובנה
+- SSL/TLS חינם
+- עובד עם S3, ALB, EC2, או כל HTTP server
+
+**TTL (Time To Live):**
+- קובע כמה זמן לשמור ב-cache
+- ברירת מחדל: 24 שעות
+
+---
+
+### CloudWatch
+
+**מה זה:** שירות Monitoring וLogging של AWS.
+
+**רכיבים:**
+
+| רכיב | תפקיד |
+|------|-------|
+| **Metrics** | מדדים (CPU, Memory, Custom) |
+| **Logs** | לוגים מכל שירות |
+| **Alarms** | התראות על סף מסוים |
+| **Dashboards** | גרפים ויזואליים |
+| **Events/EventBridge** | תגובה לאירועים |
+
+**Metrics חשובים ל-EC2:**
+- CPUUtilization
+- NetworkIn/Out
+- DiskReadOps/WriteOps
+- StatusCheckFailed
+
+---
+
+### CloudTrail
+
+**מה זה:** מתעד כל פעולת API ב-AWS account.
+
+**שימושים:**
+- Security audit
+- Compliance
+- Troubleshooting
+
+**מה נרשם:**
+- מי עשה (User/Role)
+- מה עשה (API call)
+- מתי (Timestamp)
+- מאיפה (IP address)
+
+---
+
+### Decoupled Services
+
+**מה זה:** ארכיטקטורה שבה שירותים לא תלויים ישירות אחד בשני.
+
+**Tightly Coupled (רע):**
+```
+Service A → Service B (ישיר)
+אם B נופל, A נופל
+```
+
+**Decoupled (טוב):**
+```
+Service A → SQS Queue → Service B
+אם B נופל, ההודעות ממתינות בQueue
+```
+
+**יתרונות:**
+- Fault tolerance
+- Independent scaling
+- Async processing
+- Easier maintenance
+
+**שירותי AWS ל-Decoupling:**
+- SQS (Simple Queue Service)
+- SNS (Simple Notification Service)
+- EventBridge
+
+---
+
+### EBS (Elastic Block Store)
+
+**מה זה:** דיסק וירטואלי ל-EC2.
+
+**סוגים:**
+
+| סוג | IOPS | שימוש |
+|-----|------|-------|
+| gp3 | עד 16,000 | General purpose (הכי נפוץ) |
+| io2 | עד 64,000 | High performance DB |
+| st1 | עד 500 | Big data, throughput |
+| sc1 | עד 250 | Cold data, archive |
+
+**מאפיינים:**
+- מחובר ל-EC2 אחד בלבד
+- באותו AZ בלבד!
+- Snapshots לגיבוי (נשמרים ב-S3)
+
+---
+
+### EFS (Elastic File System)
+
+**מה זה:** NFS מנוהל - file system משותף.
+
+**הבדל מ-EBS:**
+
+| מאפיין | EBS | EFS |
+|--------|-----|-----|
+| חיבור | EC2 אחד | מרובה EC2 |
+| AZ | אחד | Cross-AZ |
+| Scaling | ידני | אוטומטי |
+| פרוטוקול | Block | NFS |
+| מחיר | זול יותר | יקר יותר |
+
+**שימושים:**
+- Shared application files
+- CMS content
+- Development environments
+
+---
+
+### IAM (Identity and Access Management)
+
+**מה זה:** ניהול זהויות והרשאות ב-AWS.
+
+**רכיבים:**
+
+| רכיב | מה זה | דוגמה |
+|------|-------|-------|
+| **User** | זהות לאדם | john@company.com |
+| **Group** | קבוצת Users | "Developers" |
+| **Role** | זהות לשירות | EC2 שניגש ל-S3 |
+| **Policy** | מסמך הרשאות | מה מותר/אסור |
+
+**IAM User vs IAM Role:**
+
+| מאפיין | User | Role |
+|--------|------|------|
+| מיועד ל | אנשים | שירותים |
+| אימות | Password/Keys | Assume Role |
+| תוקף | קבוע | זמני |
+| Best Practice | לאנשים | לאוטומציה |
+
+**IAM Policy vs Resource Policy:**
+
+| מאפיין | IAM Policy | Resource Policy |
+|--------|------------|-----------------|
+| מוצמד ל | User/Group/Role | המשאב עצמו |
+| שואל | "מה User יכול?" | "מי יכול לגשת?" |
+| Cross-Account | דורש Assume | ישיר |
+
+---
+
+### Internet Gateway (IGW)
+
+**מה זה:** שער שמחבר VPC לאינטרנט.
+
+**מאפיינים:**
+- Horizontally scaled, redundant, HA
+- AWS מנהל - אין לך מה לדאוג
+- חינמי (משלמים Data Transfer)
+- אחד ל-VPC
+
+**חובה בשביל:**
+- EC2 עם Public IP יוכל לצאת לאינטרנט
+- תנועה נכנסת מהאינטרנט
+
+---
+
+### Lambda
+
+**מה זה:** Serverless compute - מריץ קוד בלי שרתים.
+
+**מאפיינים:**
+- Event-driven
+- Pay per millisecond
+- Auto-scale (עד אלפי executions במקביל)
+- תומך: Python, Node.js, Java, Go, .NET
+
+**מגבלות:**
+| מגבלה | ערך |
+|-------|-----|
+| Timeout | 15 דקות |
+| Memory | 128MB - 10GB |
+| Package size | 250MB |
+| /tmp storage | 512MB (או 10GB עם EFS) |
+
+**Triggers נפוצים:**
+- API Gateway
+- S3 events
+- EventBridge (cron)
+- SQS
+- DynamoDB Streams
+
+**מתזמן:** EventBridge
+```
+cron(0 2 * * ? *)  # כל יום ב-2 בלילה
+rate(5 minutes)    # כל 5 דקות
+```
+
+---
+
+### NAT Gateway
+
+**מה זה:** מאפשר ל-Private Subnet לצאת לאינטרנט.
+
+**איך עובד:**
+```
+Private EC2 → NAT Gateway (Public Subnet) → IGW → Internet
+```
+
+**מאפיינים:**
+- יציאה בלבד! אי אפשר להיכנס דרכו
+- יושב ב-Public Subnet
+- עלות: ~$0.045/שעה + Data processing
+- HA באותו AZ (צריך NAT לכל AZ ל-HA מלא)
+
+**שימושים:**
+- EC2 ב-Private Subnet צריך לעדכן packages
+- Lambda ב-VPC צריך גישה לאינטרנט
+- ECS tasks צריכים למשוך images
+
+---
+
+### Private Link / VPC Endpoint
+
+**מה זה:** גישה לשירותי AWS בלי אינטרנט.
+
+**שני סוגים:**
+
+| סוג | מה זה | עלות | שירותים |
+|-----|-------|------|---------|
+| **Interface** | ENI בתוך VPC | בתשלום | רוב השירותים |
+| **Gateway** | Route Table | חינם! | S3, DynamoDB בלבד |
+
+**יתרונות:**
+- אבטחה: Traffic לא יוצא מ-AWS
+- ביצועים: Latency נמוך
+- עלות: חוסך NAT Gateway
+
+**דוגמה - ECR בלי אינטרנט:**
+```
+צריך 3 Interface Endpoints:
+- com.amazonaws.region.ecr.api
+- com.amazonaws.region.ecr.dkr
+- com.amazonaws.region.s3 (Gateway - חינם)
+```
+
+---
+
+### RDS (Relational Database Service)
+
+**מה זה:** בסיס נתונים מנוהל.
+
+**מנועים נתמכים:**
+MySQL, PostgreSQL, MariaDB, Oracle, SQL Server, Aurora
+
+**Multi-AZ:**
+- Standby ב-AZ אחר
+- Failover אוטומטי (1-2 דקות)
+- Standby לא נגיש לקריאה!
+
+**Read Replica:**
+- עותק לקריאה
+- נגיש לקריאה
+- Async replication
+
+| מאפיין | Multi-AZ | Read Replica |
+|--------|----------|--------------|
+| מטרה | HA | ביצועים |
+| נגיש? | לא | כן |
+| Sync | Synchronous | Async |
+| Failover | אוטומטי | ידני |
+
+---
+
+### Route 53
+
+**מה זה:** שירות DNS של AWS.
+
+**סוגי ניתוב:**
+
+| סוג | לוגיקה | שימוש | דוגמה |
+|-----|--------|-------|-------|
+| **Simple** | IP אחד | Basic | אתר פשוט |
+| **Weighted** | לפי אחוזים | A/B Testing | 90% v1, 10% v2 |
+| **Latency** | לפי מהירות | Global users | Region הכי מהיר |
+| **Geolocation** | לפי מיקום | Compliance | ישראל → il-central |
+| **Failover** | Primary/Secondary | DR | אם Primary נופל |
+| **Multivalue** | כמה IPs | Simple LB | 8 IPs רנדומלי |
+
+---
+
+### S3 (Simple Storage Service)
+
+**מה זה:** Object Storage ללא הגבלה.
+
+**מאפיינים:**
+- Objects (לא קבצים רגילים)
+- 99.999999999% Durability (11 תשיעיות)
+- Max object size: 5TB
+- Versioning
+- Encryption (SSE-S3, SSE-KMS, SSE-C)
+
+**Storage Classes:**
+
+| Class | זמינות | Min Duration | שימוש |
+|-------|--------|--------------|-------|
+| Standard | מיידי | אין | גישה תכופה |
+| Standard-IA | מיידי | 30 יום | גישה לא תכופה |
+| One Zone-IA | מיידי | 30 יום | פחות קריטי |
+| Glacier Instant | מיידי | 90 יום | ארכיון + גישה מהירה |
+| Glacier Flexible | דקות-שעות | 90 יום | ארכיון |
+| Glacier Deep | 12-48 שעות | 180 יום | ארכיון ארוך |
+
+---
+
+### Security Group (SG)
+
+**מה זה:** Firewall וירטואלי ברמת Instance.
+
+**מאפיינים:**
+- **Stateful:** אם נכנס, יוצא אוטומטית
+- Default: All inbound denied, All outbound allowed
+- רק Allow rules (אין Deny)
+
+**SG Referencing:**
+במקום CIDR, אפשר להתייחס ל-SG אחר:
+```
+Inbound: Allow from sg-alb-12345 (רק ALB יכול)
+```
+**יותר מאובטח מ:** `Allow 10.0.0.0/16`
+
+---
+
+### Subnet
+
+**מה זה:** חלוקה של VPC.
+
+**Public vs Private:**
+
+| מאפיין | Public | Private |
+|--------|--------|---------|
+| Route לאינטרנט | IGW ישיר | דרך NAT |
+| Public IP | כן | לא |
+| מה שמים | ALB, Bastion, NAT | DB, App servers |
+
+**CIDR דוגמה:**
+```
+VPC: 10.0.0.0/16 (65,536 IPs)
+├── Public: 10.0.1.0/24 (256 IPs)
+├── Public: 10.0.2.0/24 (256 IPs)
+├── Private: 10.0.10.0/24 (256 IPs)
+└── Private: 10.0.11.0/24 (256 IPs)
+```
+
+---
+
+### VPC (Virtual Private Cloud)
+
+**מה זה:** רשת וירטואלית פרטית שלך ב-AWS.
+
+**רכיבים:**
+- **CIDR Block:** טווח IPs
+- **Subnets:** חלוקות
+- **Route Tables:** לאן לשלוח traffic
+- **IGW:** גישה לאינטרנט
+- **NAT:** יציאה לאינטרנט מ-Private
+- **Security Groups:** Firewall
+
+---
+
+## ☸️ Kubernetes - מושגים מפורטים
+
+---
+
+### ConfigMap
+
+**מה זה:** אחסון configuration לא-רגיש.
+
+**שימושים:**
+- Environment variables
+- Configuration files
+- Command-line arguments
+
+**יצירה:**
+```yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+data:
+  DATABASE_HOST: "db.example.com"
+  LOG_LEVEL: "debug"
+  config.json: |
+    {"feature_flag": true}
+```
+
+**שימוש ב-Pod:**
+```yaml
+env:
+  - name: DATABASE_HOST
+    valueFrom:
+      configMapKeyRef:
+        name: app-config
+        key: DATABASE_HOST
+```
+
+---
+
+### DaemonSet
+
+**מה זה:** מבטיח שPod אחד רץ על כל Node.
+
+**שימושים:**
+- Logging agents (Fluentd)
+- Monitoring agents (Prometheus Node Exporter)
+- Storage daemons
+- Network plugins
+
+**הבדל מ-Deployment:**
+| Deployment | DaemonSet |
+|------------|-----------|
+| X replicas איפשהו | Pod אחד על כל Node |
+| Scheduler מחליט | Node = Pod |
+
+---
+
+### Deployment Strategies - 4 אסטרטגיות פריסה
+
+**1. Rolling Update (ברירת מחדל)**
+```
+[v1] [v1] [v1] [v1]
+[v1] [v1] [v1] [v2]  ← מחליף אחד
+[v1] [v1] [v2] [v2]  ← מחליף עוד אחד
+[v1] [v2] [v2] [v2]
+[v2] [v2] [v2] [v2]  ← הושלם
+```
+- ✅ Zero downtime
+- ✅ Rollback קל
+- ⚠️ שתי גרסאות במקביל
+
+**2. Recreate**
+```
+[v1] [v1] [v1] [v1]
+[  ] [  ] [  ] [  ]  ← מוחק הכל
+[v2] [v2] [v2] [v2]  ← מעלה חדש
+```
+- ❌ יש Downtime!
+- ✅ אין שתי גרסאות
+- שימוש: כשאי אפשר 2 גרסאות (DB migrations)
+
+**3. Blue-Green**
+```
+Blue (v1):  [v1] [v1] [v1] [v1]  ← Live
+Green (v2): [v2] [v2] [v2] [v2]  ← Ready
+
+Switch DNS/LB:
+Blue (v1):  [v1] [v1] [v1] [v1]  ← Standby
+Green (v2): [v2] [v2] [v2] [v2]  ← Live
+```
+- ✅ Zero downtime
+- ✅ Instant rollback
+- ❌ כפול משאבים
+
+**4. Canary**
+```
+שלב 1: 5% traffic ל-v2
+[v1] [v1] [v1] [v1] [v1] [v1] [v1] [v1] [v1] [v2]
+
+שלב 2: 25% traffic ל-v2
+[v1] [v1] [v1] [v1] [v1] [v1] [v1] [v2] [v2] [v2]
+
+שלב 3: 100% traffic ל-v2
+[v2] [v2] [v2] [v2] [v2] [v2] [v2] [v2] [v2] [v2]
+```
+- ✅ בדיקה ב-Production
+- ✅ Gradual rollout
+- שימוש: Features חדשים, High risk changes
+
+---
+
+### HPA (Horizontal Pod Autoscaler)
+
+**מה זה:** Auto-scaling של Pods לפי metrics.
+
+**איך עובד:**
+1. מודד CPU/Memory/Custom metrics
+2. משווה ל-target (למשל 70%)
+3. מחשב כמה Pods צריך
+4. מוסיף/מוריד Pods
+
+**הגדרה:**
+```yaml
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: my-app-hpa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: my-app
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+```
+
+---
+
+### Ingress & Ingress Controller
+
+**Ingress (Resource):**
+מסמך YAML שמגדיר חוקי ניתוב.
+
+**Ingress Controller (Software):**
+התוכנה שקוראת את ה-Ingress ומבצעת בפועל.
+
+**Controllers נפוצים:**
+- NGINX Ingress Controller
+- Traefik
+- HAProxy
+- AWS ALB Ingress Controller
+
+**דוגמת Ingress:**
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: my-ingress
+spec:
+  rules:
+  - host: api.example.com
+    http:
+      paths:
+      - path: /users
+        pathType: Prefix
+        backend:
+          service:
+            name: users-service
+            port:
+              number: 80
+      - path: /orders
+        pathType: Prefix
+        backend:
+          service:
+            name: orders-service
+            port:
+              number: 80
+```
+
+---
+
+### Namespace
+
+**מה זה:** חלוקה לוגית של הקלאסטר.
+
+**שימושים:**
+- הפרדה בין סביבות: dev, staging, prod
+- הפרדה בין צוותים
+- Resource Quotas
+- Network Policies
+
+**Default Namespaces:**
+| Namespace | תפקיד |
+|-----------|--------|
+| default | ברירת מחדל |
+| kube-system | רכיבי K8s (CoreDNS, etc.) |
+| kube-public | משאבים ציבוריים |
+
+**פקודות:**
+```bash
+kubectl get namespaces
+kubectl create namespace dev
+kubectl get pods -n production
+kubectl get pods --all-namespaces
+```
+
+---
+
+### Node Affinity & Pod Affinity
+
+**Node Selector (פשוט):**
+```yaml
+nodeSelector:
+  disktype: ssd
+```
+
+**Node Affinity (מתקדם):**
+```yaml
+affinity:
+  nodeAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: disktype
+          operator: In
+          values: [ssd, nvme]
+```
+
+**Pod Affinity:**
+"רוץ על Node שיש עליו Pod עם label מסוים"
+שימוש: Web server ליד Cache
+
+**Pod Anti-Affinity:**
+"רוץ על Node שאין עליו Pod עם label מסוים"
+שימוש: DB replicas על Nodes שונים (HA)
+
+---
+
+### Probes - בדיקות בריאות
+
+**3 סוגי Probes:**
+
+| Probe | שואל | אם נכשל | מתי לבדוק |
+|-------|------|---------|-----------|
+| **Liveness** | "אתה חי?" | Restart | כל הזמן |
+| **Readiness** | "אתה מוכן?" | לא שולחים traffic | כל הזמן |
+| **Startup** | "עלית?" | ממתינים | רק בהתחלה |
+
+**סוגי בדיקות:**
+- **httpGet:** GET request ל-endpoint
+- **tcpSocket:** בדיקת port פתוח
+- **exec:** הרצת command
+
+**דוגמה:**
+```yaml
+livenessProbe:
+  httpGet:
+    path: /healthcheck
+    port: 8080
+  initialDelaySeconds: 10
+  periodSeconds: 30
+  failureThreshold: 3
+
+readinessProbe:
+  httpGet:
+    path: /ready
+    port: 8080
+  initialDelaySeconds: 5
+  periodSeconds: 10
+```
+
+---
+
+### PVC (Persistent Volume Claim)
+
+**מה זה:** בקשה לאחסון קבוע.
+
+**3 רכיבים:**
+| רכיב | מה זה | מי יוצר |
+|------|-------|---------|
+| **PV** | האחסון הפיזי | Admin / Dynamic |
+| **PVC** | הבקשה | Developer |
+| **StorageClass** | סוג האחסון | Admin |
+
+**דוגמה:**
+```yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: my-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: gp2
+```
+
+**Access Modes:**
+- **ReadWriteOnce (RWO):** Node אחד
+- **ReadOnlyMany (ROX):** הרבה Nodes קריאה
+- **ReadWriteMany (RWX):** הרבה Nodes כתיבה
+
+---
+
+### Secret
+
+**מה זה:** אחסון מידע רגיש.
+
+**סוגים:**
+- Opaque (ברירת מחדל)
+- kubernetes.io/tls
+- kubernetes.io/dockerconfigjson
+
+**⚠️ חשוב:** base64 ≠ הצפנה!
+לאבטחה אמיתית: External Secrets, Vault, Sealed Secrets
+
+**יצירה:**
+```bash
+kubectl create secret generic db-secret \
+  --from-literal=username=admin \
+  --from-literal=password=secret123
+```
+
+---
+
+### Service - סוגים בפירוט
+
+**1. ClusterIP (ברירת מחדל)**
+- נגיש רק מתוך הקלאסטר
+- מקבל IP פנימי
+- שימוש: שירותים פנימיים
+
+```yaml
+spec:
+  type: ClusterIP
+  ports:
+  - port: 80
+    targetPort: 8080
+```
+
+**2. NodePort**
+- פותח Port על כל Node (30000-32767)
+- נגיש מבחוץ דרך `<NodeIP>:<NodePort>`
+- שימוש: Dev/Testing, או כשאין Cloud LB
+
+```yaml
+spec:
+  type: NodePort
+  ports:
+  - port: 80
+    targetPort: 8080
+    nodePort: 30080  # אופציונלי, אחרת אוטומטי
+```
+
+**⚠️ חסרונות NodePort:**
+- צריך לדעת IP של Node
+- Port בטווח מוגבל
+- לא recommended ל-Production
+
+**3. LoadBalancer**
+- יוצר Cloud Load Balancer (ALB/NLB)
+- מקבל External IP
+- שימוש: Production
+
+```yaml
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 80
+    targetPort: 8080
+```
+
+**4. ExternalName**
+- DNS CNAME record
+- מפנה לשירות חיצוני
+- שימוש: גישה לשירות מחוץ לקלאסטר
+
+```yaml
+spec:
+  type: ExternalName
+  externalName: my.database.example.com
+```
+
+---
+
+### Service Account
+
+**מה זה:** זהות עבור Pods (לא בני אדם).
+
+**שימושים:**
+- גישה ל-Kubernetes API
+- RBAC permissions
+- קישור ל-AWS IAM (IRSA)
+
+**דוגמה:**
+```yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: my-app-sa
+---
+# Pod שמשתמש ב-SA
+spec:
+  serviceAccountName: my-app-sa
+```
+
+---
+
+### StatefulSet
+
+**מה זה:** כמו Deployment אבל ל-Stateful apps.
+
+**הבדלים מ-Deployment:**
+
+| מאפיין | Deployment | StatefulSet |
+|--------|------------|-------------|
+| שמות Pods | רנדומלי (abc123) | סדרתי (pod-0, pod-1) |
+| סדר יצירה | מקבילי | סדרתי |
+| PVC | משותף | לכל Pod בנפרד |
+| DNS | Service | Pod-specific |
+
+**שימושים:**
+- Databases (MySQL, PostgreSQL)
+- Message queues (Kafka, RabbitMQ)
+- Distributed systems (Elasticsearch)
+
+---
+
+### Taints & Tolerations
+
+**Taint (על Node):**
+"אל תשים עלי Pods (אלא אם יש להם Toleration)"
+
+```bash
+kubectl taint nodes node1 gpu=true:NoSchedule
+```
+
+**Toleration (על Pod):**
+"אני יכול לרוץ על Node עם Taint"
+
+```yaml
+tolerations:
+- key: "gpu"
+  operator: "Equal"
+  value: "true"
+  effect: "NoSchedule"
+```
+
+**Effects:**
+| Effect | התנהגות |
+|--------|---------|
+| NoSchedule | לא ישים Pods חדשים |
+| PreferNoSchedule | ינסה לא לשים |
+| NoExecute | יסיר Pods קיימים! |
+
+---
+
+## 🔧 CI/CD & DevOps Tools
+
+---
+
+### Artifact
+
+**מה זה:** תוצר של תהליך Build.
+
+**דוגמאות:**
+- Docker Image
+- JAR/WAR file
+- Compiled binary
+- npm package
+- Test reports
+- Helm chart
+
+**איפה שומרים:**
+- Docker Registry (ECR, Docker Hub)
+- Artifactory / Nexus
+- S3
+- GitHub Packages
+
+---
+
+### CI vs CD
+
+| מונח | משמעות | מה כולל |
+|------|--------|---------|
+| **CI** | Continuous Integration | Build, Test, Lint על כל commit |
+| **CD** | Continuous Delivery | פריסה אוטומטית לסביבות |
+
+**שלבי Pipeline מלא:**
+```
+1. Source     ← Code checkout
+2. Build      ← Compile, npm install
+3. Test       ← Unit, Integration
+4. Security   ← SAST, Dependency scan
+5. Package    ← Docker build
+6. Deploy     ← Push to environment
+7. Verify     ← Health checks
+```
+
+---
+
+### GitHub Actions vs Jenkins
+
+| מאפיין | GitHub Actions | Jenkins |
+|--------|----------------|---------|
+| סוג | SaaS (מנוהל) | Self-hosted |
+| תחזוקה | GitHub | אתה |
+| קובץ | YAML | Groovy |
+| Marketplace | Actions | Plugins |
+| עלות | דקות חינם + תשלום | חינם + שרתים |
+| למידה | קל | מורכב יותר |
+| גמישות | טובה | מקסימלית |
+
+---
+
+### Helm
+
+**מה זה:** Package Manager לקוברנטיס.
+
+**למה צריך:**
+- Templating - YAMLים דינמיים
+- Packaging - חבילות מוכנות (nginx, mysql)
+- Versioning - גרסאות
+- Rollback - חזרה לגרסה קודמת
+
+**מבנה Chart:**
+```
+mychart/
+├── Chart.yaml      # Metadata
+├── values.yaml     # Default values
+├── templates/
+│   ├── deployment.yaml
+│   ├── service.yaml
+│   └── _helpers.tpl  # Functions
+└── charts/         # Dependencies
+```
+
+**פקודות:**
+```bash
+helm install myapp ./mychart
+helm upgrade myapp ./mychart
+helm rollback myapp 1
+helm uninstall myapp
+helm lint ./mychart
+```
+
+**helm lint:** בודק תקינות Chart
+
+**_helpers.tpl:** קובץ עם functions לשימוש חוזר
+
+---
+
+### Terraform
+
+**מושגים:**
+
+| מושג | הסבר |
+|------|------|
+| **State** | קובץ שמתעד מצב נוכחי |
+| **Drift** | פער בין State לאמת |
+| **Plan** | מראה מה ישתנה |
+| **Apply** | מבצע שינויים |
+| **Module** | קוד לשימוש חוזר |
+| **Workspace** | States נפרדים |
+
+**איפה לשמור State?**
+Remote Backend (S3 + DynamoDB)
+- שיתוף צוות
+- Locking
+- גיבוי
+- לא ב-Git!
+
+**terraform validate:** בודק syntax (לא מול הענן)
+
+**שינוי שם Bucket:** ימחק וייצור חדש! (immutable)
+
+---
+
+## 📊 Monitoring
+
+---
+
+### Prometheus
+
+**מה זה:** מערכת Monitoring ואיסוף Metrics.
+
+**מאפיינים:**
+- Pull-based (מושך metrics מכל target)
+- Time-series database
+- PromQL (שפת שאילתות)
+- AlertManager לnרשות
+
+**דוגמת PromQL:**
+```
+# CPU usage
+rate(container_cpu_usage_seconds_total[5m])
+
+# Memory
+container_memory_usage_bytes
+```
+
+---
+
+### Grafana
+
+**מה זה:** כלי Visualization.
+
+**מאפיינים:**
+- Dashboards יפים
+- מתחבר להרבה data sources
+- Alerting
+- Open source
+
+---
+
+### NGINX
+
+**מה זה:** Web server רב-תכליתי.
+
+**תפקידים:**
+| תפקיד | הסבר |
+|-------|------|
+| Web Server | מגיש קבצים סטטיים |
+| Reverse Proxy | מעביר ל-backend |
+| Load Balancer | מפזר עומסים |
+| Ingress Controller | בקוברנטיס |
+
+---
+
+## 🎯 תרחישים מלאים
+
+---
+
+### תרחיש: הקמת אתר E-Commerce
+
+**שאלות לשאול:**
+
+1. **גאוגרפיה**
+   - ישראל בלבד → Region il-central-1
+   - גלובלי → CloudFront
+
+2. **עדכניות מוצרים**
+   - לעיתים רחוקות → Redis caching
+   - תכופות → פחות cache, יותר DB reads
+
+3. **כמות כניסות**
+   - לפי זה: sizing של instances ו-DB
+   - Auto Scaling policies
+
+**ארכיטקטורה:**
+```
+Users → CloudFront → ALB → EKS/EC2 (ASG)
+                          ↓
+                    RDS Aurora + ElastiCache
+```
+
+---
+
+### תרחיש: קמפיין חגים (10K→40K)
+
+**בעיה:** עומס צפוי x4
+
+**פתרון:**
+
+1. **Auto Scaling**
+   - Target: CPU 70%
+   - Max instances מספיק גבוה
+
+2. **Database**
+   - Read Replicas
+   - Connection pooling
+
+3. **Caching**
+   - Redis/ElastiCache
+   - CloudFront TTL
+
+4. **Pre-warming**
+   - הגדל capacity מראש
+   - Load testing
+
+---
+
+### תרחיש: שדרוג K8s Cluster
+
+**שלבים:**
+
+1. **Control Plane קודם**
+   - חייב להיות ≤2 versions מ-Workers
+   - AWS EKS עושה אוטומטי
+
+2. **בדיקה**
+   ```bash
+   kubectl get nodes
+   kubectl get pods --all-namespaces
+   ```
+
+3. **Worker Nodes**
+   - אחד-אחד
+   - drain → upgrade → uncordon
+
+4. **חזור על התהליך**
+   - Max 2 minor versions בפעם
+
+---
+
+### תרחיש: Pods ב-ERROR
+
+**שלב 1 - High Level:**
+```bash
+kubectl describe pod <name>
+```
+בודק: Events, Conditions, State
+
+**שלב 2 - Application Level:**
+```bash
+kubectl logs <name>
+kubectl logs <name> --previous  # אם קרס
+```
+
+**סיבות נפוצות:**
+
+| Status | סיבה | פתרון |
+|--------|------|-------|
+| ImagePullBackOff | אין גישה ל-Registry | בדוק credentials |
+| CrashLoopBackOff | App קורס | בדוק logs |
+| OOMKilled | חוסר זיכרון | הגדל limits |
+| Pending | אין resources | הוסף Nodes |
+
+---
+
+### תרחיש: Traffic ALB → K8s
+
+**ברמת ALB:**
+- Public Subnet
+- SG: Inbound 80, 443 from 0.0.0.0/0
+- Redirect HTTP → HTTPS
+- Optional: WAF
+
+**ברמת K8s:**
+- SG Referencing (רק ALB SG)
+- Ingress resource
+- Ingress Controller (NGINX)
+
+---
+
+### תרחיש: K8s בלי אינטרנט
+
+**בעיות:**
+- לא יכול Pull images
+- לא יכול להתקין packages
+
+**פתרונות:**
+1. **Private Registry**
+   - ECR + VPC Endpoints
+   
+2. **Golden AMI**
+   - Images מותקנים מראש
+   
+3. **Private Link**
+   - Interface Endpoints לשירותי AWS
+
+---
+
+### תרחיש: DB Scaling ללא Downtime
+
+**Aurora:**
+- Auto Scaling אוטומטי
+- Cross-Region reads
+
+**RDS - Vertical:**
+1. צור Standby ב-AZ אחר
+2. Modify את ה-Standby (הוסף resources)
+3. Failover (30-60 שניות)
+
+**RDS - Horizontal:**
+1. הוסף Read Replicas
+2. Application routing:
+   - SELECT → Replicas
+   - INSERT/UPDATE → Master
+
+**טיפ:** RDS Proxy מחזיק connections בזמן failover
+
+---
+
 **טיפ אחרון לראיון:**
 אל תפחד להגיד "אני לא יודע".
 עדיף להגיד "אני לא בטוח, אבל הייתי בודק ככה..." מאשר להמציא תשובה.
