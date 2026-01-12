@@ -1,4 +1,4 @@
-<div dir="rtl" align="right">
+צריך <div dir="rtl" align="right">
 
 # 📘 מדריך DevOps מקיף - הכנה לראיון עבודה
 
