@@ -1777,22 +1777,216 @@ docker run -v /home/user/code:/app myapp
 
 ## פרק 26: Kubernetes Scheduling - מנגנוני תזמון
 
-### ❓ "Labels ו-Selectors?"
+### ❓ "Labels ו-Selectors?" - הסבר מקיף
 
-**Labels** = תגיות key-value על Resources.
-**Selectors** = בחירת Resources לפי Labels.
+**איך הייתי עונה בראיון:**
+
+"Labels ו-Selectors הם הבסיס של כל התקשורת בקוברנטיס. בלעדיהם, שום דבר לא מתחבר לשום דבר.
+
+---
+
+**Labels - מה זה:**
+
+Labels הם תגיות key-value שמוצמדות ל-Resources (Pods, Services, Nodes, וכו').
 
 ```yaml
-# Label על Pod
 metadata:
   labels:
-    app: my-app
-    env: production
-
-# Selector ב-Service שבוחר Pods
-selector:
-  app: my-app
+    app: my-app           # מפתח: app, ערך: my-app
+    env: production       # מפתח: env, ערך: production
+    tier: frontend        # מפתח: tier, ערך: frontend
+    version: v1.2.3       # מפתח: version, ערך: v1.2.3
 ```
+
+**למה צריך:**
+- Service צריך למצוא את ה-Pods שלו
+- Deployment צריך לדעת אילו Pods הוא מנהל
+- ReplicaSet צריך לספור Pods
+- NetworkPolicy צריך להגדיר על מי החוקים חלים
+
+---
+
+**Selectors - שני סוגים:**
+
+## 1️⃣ Equality-Based Selectors (שוויון)
+
+הסוג הפשוט - משווה key=value בדיוק.
+
+**Operators:**
+| Operator | משמעות | דוגמה |
+|----------|--------|-------|
+| `=` או `==` | שווה ל | `env = production` |
+| `!=` | לא שווה ל | `env != test` |
+
+**דוגמה - Service:**
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-service
+spec:
+  selector:
+    app: my-app          # Equality: app שווה ל my-app
+    env: production      # AND: env שווה ל production
+  # מחפש Pods עם: app=my-app AND env=production
+```
+
+**דוגמה - kubectl:**
+```bash
+# Equality-based selector
+kubectl get pods -l app=my-app
+kubectl get pods -l 'env!=test'
+kubectl get pods -l app=my-app,env=production  # AND
+```
+
+**מגבלות:**
+- ❌ אי אפשר OR (זה או זה)
+- ❌ אי אפשר לבדוק אם key קיים
+- ❌ אי אפשר לבדוק רשימת ערכים
+
+---
+
+## 2️⃣ Set-Based Selectors (מבוסס-קבוצה / Expressions)
+
+הסוג המתקדם - תומך בתנאים מורכבים.
+
+**Operators:**
+| Operator | משמעות | דוגמה |
+|----------|--------|-------|
+| `In` | ערך מתוך רשימה | `env In (prod, staging)` |
+| `NotIn` | ערך לא ברשימה | `env NotIn (test, dev)` |
+| `Exists` | ה-key קיים | `gpu Exists` |
+| `DoesNotExist` | ה-key לא קיים | `spot DoesNotExist` |
+
+**דוגמה - Deployment עם matchExpressions:**
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-deployment
+spec:
+  selector:
+    matchLabels:           # Equality-based (AND)
+      app: my-app
+    matchExpressions:      # Set-based (AND)
+      - key: env
+        operator: In
+        values:
+          - production
+          - staging
+      - key: version
+        operator: NotIn
+        values:
+          - deprecated
+          - legacy
+      - key: monitoring
+        operator: Exists    # לא חשוב מה הערך
+```
+
+**דוגמה - kubectl:**
+```bash
+# Set-based selectors
+kubectl get pods -l 'env in (production, staging)'
+kubectl get pods -l 'env notin (test, dev)'
+kubectl get pods -l 'gpu'                        # Exists
+kubectl get pods -l '!spot'                      # DoesNotExist
+
+# שילוב
+kubectl get pods -l 'app=my-app,env in (prod, staging)'
+```
+
+---
+
+**השוואה - Equality vs Set-Based:**
+
+| מאפיין | Equality | Set-Based |
+|--------|----------|-----------|
+| **תחביר** | `key=value` | `key In (values)` |
+| **OR** | ❌ | ✅ In |
+| **NOT** | `!=` בלבד | NotIn, DoesNotExist |
+| **קיום key** | ❌ | ✅ Exists |
+| **איפה נתמך** | Service selector, nodeSelector | matchExpressions, Node Affinity |
+
+---
+
+**איפה משתמשים בכל סוג:**
+
+| Resource | Equality | Set-Based |
+|----------|----------|-----------|
+| **Service** | ✅ selector | ❌ |
+| **ReplicaSet** | ✅ matchLabels | ✅ matchExpressions |
+| **Deployment** | ✅ matchLabels | ✅ matchExpressions |
+| **Job** | ✅ matchLabels | ✅ matchExpressions |
+| **NetworkPolicy** | ✅ matchLabels | ✅ matchExpressions |
+| **Node Selector** | ✅ | ❌ |
+| **Node Affinity** | ❌ | ✅ (רק expressions) |
+
+---
+
+**דוגמה מלאה - Job שרץ רק על Nodes מסוימים:**
+
+```yaml
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: gpu-training
+spec:
+  template:
+    metadata:
+      labels:
+        job-name: gpu-training
+        type: ml
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              # GPU חייב להיות nvidia או amd
+              - key: accelerator
+                operator: In
+                values: [nvidia, amd]
+              # לא Spot Instance
+              - key: lifecycle
+                operator: NotIn
+                values: [spot]
+              # חייב להיות label בשם 'ml-ready'
+              - key: ml-ready
+                operator: Exists
+      containers:
+      - name: training
+        image: tensorflow/tensorflow:latest-gpu
+```
+
+---
+
+**Best Practices:**
+
+1. **Labels מאורגנים:** `app`, `env`, `tier`, `version`, `team`
+2. **השתמש ב-matchLabels לפשוט, matchExpressions למורכב**
+3. **Service תומך רק ב-Equality** - זכור!
+4. **Node Affinity תומך רק ב-Expressions** - זכור!
+
+---
+
+**פקודות שימושיות:**
+
+```bash
+# הוסף label
+kubectl label pods my-pod env=production
+
+# הסר label
+kubectl label pods my-pod env-
+
+# ראה labels
+kubectl get pods --show-labels
+
+# סינון עם selectors
+kubectl get pods -l 'app=my-app'
+kubectl get pods -l 'env in (prod, staging), tier=frontend'
+```
+
+---
 
 ### ❓ "Taints ו-Tolerations?"
 
