@@ -1,6 +1,44 @@
-# Rick and Morty Character Fetcher
+# 🧪 Rick and Morty Character Fetcher
 
-DevOps Home Exercise - Fetches characters from Rick and Morty API based on specific criteria.
+![CI/CD Pipeline](https://github.com/YOUR-USERNAME/YOUR-REPO/actions/workflows/ci-cd.yaml/badge.svg)
+![Docker](https://img.shields.io/badge/Docker-2CA5E0?style=flat&logo=docker&logoColor=white)
+![Kubernetes](https://img.shields.io/badge/Kubernetes-326CE5?style=flat&logo=kubernetes&logoColor=white)
+![Prometheus](https://img.shields.io/badge/Prometheus-E6522C?style=flat&logo=prometheus&logoColor=white)
+![Grafana](https://img.shields.io/badge/Grafana-F46800?style=flat&logo=grafana&logoColor=white)
+
+DevOps Home Exercise - Complete CI/CD Pipeline with Monitoring Stack.
+
+## 🏗️ Architecture Overview
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                           MONITORING STACK                                   │
+│  ┌─────────────────────────────────────────────────────────────────────┐    │
+│  │                                                                      │    │
+│  │   ┌──────────────┐     scrape     ┌──────────────┐                  │    │
+│  │   │              │ ◄───────────── │              │                  │    │
+│  │   │   GRAFANA    │                │  PROMETHEUS  │                  │    │
+│  │   │   :3000      │  ───────────►  │    :9090     │                  │    │
+│  │   │              │    query       │              │                  │    │
+│  │   └──────────────┘                └──────────────┘                  │    │
+│  │          │                               │                          │    │
+│  │          │ dashboards                    │ /metrics                 │    │
+│  │          ▼                               ▼                          │    │
+│  │   ┌────────────────────────────────────────────────────────────┐   │    │
+│  │   │                                                             │   │    │
+│  │   │                    RICK & MORTY API                         │   │    │
+│  │   │                        :5000                                │   │    │
+│  │   │                                                             │   │    │
+│  │   │   ┌────────────┐  ┌────────────┐  ┌────────────┐          │   │    │
+│  │   │   │ /health    │  │/characters │  │ /metrics   │          │   │    │
+│  │   │   └────────────┘  └────────────┘  └────────────┘          │   │    │
+│  │   │                                                             │   │    │
+│  │   └────────────────────────────────────────────────────────────┘   │    │
+│  │                                                                      │    │
+│  └─────────────────────────────────────────────────────────────────────┘    │
+│                                                                              │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
 
 ## 📋 Requirements
 
@@ -133,13 +171,30 @@ curl http://localhost:8080/characters
 ```
 .
 ├── app/
-│   ├── main.py          # Script version (outputs CSV)
-│   ├── api.py           # REST API service
+│   ├── main.py              # Script version (outputs CSV)
+│   ├── api.py               # REST API service + Prometheus metrics
 │   └── requirements.txt
 ├── yamls/
 │   ├── deployment.yaml
 │   ├── service.yaml
 │   └── ingress.yaml
+├── helm/
+│   └── rick-morty-api/
+│       ├── Chart.yaml
+│       ├── values.yaml
+│       └── templates/
+├── monitoring/                    # 📊 Monitoring Stack
+│   ├── prometheus/
+│   │   ├── prometheus.yml        # Scrape config
+│   │   └── alerts.yml            # Alert rules
+│   └── grafana/
+│       └── provisioning/
+│           ├── datasources/
+│           └── dashboards/
+├── .github/
+│   └── workflows/
+│       └── ci-cd.yaml           # GitHub Actions pipeline
+├── docker-compose.yaml           # Full stack with monitoring
 ├── Dockerfile
 └── README.md
 ```
@@ -252,6 +307,119 @@ The project includes a complete CI/CD pipeline that runs automatically on every 
 
 ---
 
+## 📊 Monitoring Stack (Prometheus + Grafana)
+
+Full observability with Prometheus metrics and beautiful Grafana dashboards!
+
+### 🚀 Quick Start - Full Stack with Monitoring
+
+```bash
+# Start everything with one command!
+docker-compose up -d
+
+# Wait for services to start (about 30 seconds)
+sleep 30
+
+# Check services
+docker-compose ps
+```
+
+### 🌐 Access Points
+
+| Service | URL | Credentials |
+|---------|-----|-------------|
+| **Rick & Morty API** | http://localhost:5000 | - |
+| **Prometheus** | http://localhost:9090 | - |
+| **Grafana** | http://localhost:3000 | admin / admin |
+
+### 📈 Grafana Dashboard Features
+
+The pre-configured dashboard includes:
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                    🧪 Rick & Morty API Dashboard                             │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  ┌────────┐  ┌────────────┐  ┌──────────────┐  ┌────────────┐  ┌─────────┐ │
+│  │   UP   │  │ 2.5 req/s  │  │   45ms avg   │  │  0% errors │  │  1.2k   │ │
+│  │  ✓     │  │ Request    │  │  Response    │  │   Error    │  │  Total  │ │
+│  │ Status │  │   Rate     │  │    Time      │  │    Rate    │  │Requests │ │
+│  └────────┘  └────────────┘  └──────────────┘  └────────────┘  └─────────┘ │
+│                                                                              │
+│  ┌──────────────────────────────┐  ┌──────────────────────────────┐        │
+│  │  📊 Request Rate by Endpoint │  │  ⏱️ Response Time Percentiles │        │
+│  │                              │  │                               │        │
+│  │     /characters ▓▓▓▓▓▓▓     │  │   p99 ═══════════════════    │        │
+│  │     /healthcheck ▓▓▓▓       │  │   p95 ═══════════════        │        │
+│  │     /           ▓▓          │  │   p50 ═════════              │        │
+│  │                              │  │                               │        │
+│  └──────────────────────────────┘  └──────────────────────────────┘        │
+│                                                                              │
+│  ┌──────────────────────────────┐  ┌──────────────────────────────┐        │
+│  │  📈 HTTP Status Codes        │  │  🥧 Status Distribution      │        │
+│  │                              │  │                               │        │
+│  │   200 ████████████████      │  │        ╭────────╮             │        │
+│  │   404 ████                   │  │       ╱  200    ╲            │        │
+│  │   500 █                      │  │      │    95%    │           │        │
+│  │                              │  │       ╲   ◕     ╱            │        │
+│  └──────────────────────────────┘  └──────────────────────────────┘        │
+│                                                                              │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+### 🔔 Configured Alerts
+
+| Alert | Condition | Severity |
+|-------|-----------|----------|
+| **APIDown** | Service unreachable for 1m | 🔴 Critical |
+| **HighErrorRate** | Error rate > 5% for 2m | 🟡 Warning |
+| **SlowResponseTime** | p95 latency > 2s for 5m | 🟡 Warning |
+| **HighRequestRate** | > 100 req/s for 2m | 🟡 Warning |
+
+### 📊 Available Metrics
+
+The API exposes Prometheus metrics at `/metrics`:
+
+```bash
+# View raw metrics
+curl http://localhost:5000/metrics
+```
+
+**Key Metrics:**
+- `flask_http_request_total` - Total HTTP requests by endpoint, method, status
+- `flask_http_request_duration_seconds` - Request latency histogram
+- `flask_http_request_exceptions_total` - Total exceptions raised
+- `up` - Target availability (1 = up, 0 = down)
+
+### 🧹 Cleanup
+
+```bash
+# Stop and remove all containers
+docker-compose down
+
+# Remove volumes (monitoring data)
+docker-compose down -v
+```
+
+### 📁 Monitoring Stack Structure
+
+```
+monitoring/
+├── prometheus/
+│   ├── prometheus.yml        # Scrape configuration
+│   └── alerts.yml           # Alert rules
+└── grafana/
+    └── provisioning/
+        ├── datasources/
+        │   └── datasources.yml    # Auto-configure Prometheus
+        └── dashboards/
+            ├── dashboards.yml     # Dashboard provisioning
+            └── rick-morty-api.json # Pre-built dashboard
+```
+
+---
+
 ## 🎯 Complete Exercise Checklist
 
 | Task | Status | File/Location |
@@ -260,17 +428,32 @@ The project includes a complete CI/CD pipeline that runs automatically on every 
 | ✅ REST API with Flask | Done | `app/api.py` |
 | ✅ /healthcheck endpoint | Done | `app/api.py` |
 | ✅ /characters endpoint | Done | `app/api.py` |
+| ✅ /metrics endpoint | Done | `app/api.py` |
 | ✅ Dockerfile | Done | `Dockerfile` |
 | ✅ Kubernetes Deployment | Done | `yamls/deployment.yaml` |
 | ✅ Kubernetes Service | Done | `yamls/service.yaml` |
 | ✅ Kubernetes Ingress | Done | `yamls/ingress.yaml` |
 | ✅ Helm Chart | Done | `helm/rick-morty-api/` |
 | ✅ GitHub Actions CI/CD | Done | `.github/workflows/ci-cd.yaml` |
+| ✅ Prometheus Monitoring | Done | `monitoring/prometheus/` |
+| ✅ Grafana Dashboards | Done | `monitoring/grafana/` |
+| ✅ Docker Compose Stack | Done | `docker-compose.yaml` |
 | ✅ README Documentation | Done | `README.md` |
+
+---
+
+## 📸 Screenshots
+
+### Grafana Dashboard
+> After running `docker-compose up -d`, navigate to http://localhost:3000 (admin/admin)
+> Go to Dashboards → Rick & Morty API Dashboard
+
+### Prometheus Targets
+> Navigate to http://localhost:9090/targets to see scrape status
 
 ---
 
 ## 👤 Author
 
-DevOps Home Exercise Solution
+DevOps Home Exercise Solution - Complete with CI/CD and Monitoring
 
