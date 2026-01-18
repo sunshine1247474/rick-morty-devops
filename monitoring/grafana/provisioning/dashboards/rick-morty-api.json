@@ -18,7 +18,7 @@
       "type": "row"
     },
     {
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "datasource": "Prometheus",
       "fieldConfig": {
         "defaults": {
           "color": { "mode": "thresholds" },
@@ -51,7 +51,7 @@
       ]
     },
     {
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "datasource": "Prometheus",
       "fieldConfig": {
         "defaults": {
           "color": { "mode": "palette-classic" },
@@ -74,7 +74,7 @@
       ]
     },
     {
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "datasource": "Prometheus",
       "fieldConfig": {
         "defaults": {
           "color": { "mode": "thresholds" },
@@ -105,7 +105,7 @@
       ]
     },
     {
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "datasource": "Prometheus",
       "fieldConfig": {
         "defaults": {
           "color": { "mode": "thresholds" },
@@ -136,7 +136,7 @@
       ]
     },
     {
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "datasource": "Prometheus",
       "fieldConfig": {
         "defaults": {
           "color": { "mode": "palette-classic" },
@@ -167,7 +167,7 @@
       "type": "row"
     },
     {
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "datasource": "Prometheus",
       "fieldConfig": {
         "defaults": {
           "color": { "mode": "palette-classic" },
@@ -201,11 +201,11 @@
       "title": "Request Rate by Endpoint",
       "type": "timeseries",
       "targets": [
-        { "expr": "sum(rate(flask_http_request_total[5m])) by (endpoint)", "legendFormat": "{{endpoint}}", "refId": "A" }
+        { "expr": "sum(rate(flask_http_request_duration_seconds_count[5m])) by (path)", "legendFormat": "{{path}}", "refId": "A" }
       ]
     },
     {
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "datasource": "Prometheus",
       "fieldConfig": {
         "defaults": {
           "color": { "mode": "palette-classic" },
@@ -243,7 +243,7 @@
       "type": "row"
     },
     {
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "datasource": "Prometheus",
       "fieldConfig": {
         "defaults": {
           "color": { "mode": "palette-classic" },
@@ -271,7 +271,7 @@
       ]
     },
     {
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "datasource": "Prometheus",
       "fieldConfig": {
         "defaults": {
           "color": { "mode": "palette-classic" },
@@ -300,7 +300,7 @@
       ]
     },
     {
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "datasource": "Prometheus",
       "fieldConfig": {
         "defaults": {
           "color": { "mode": "palette-classic" },
@@ -318,10 +318,10 @@
       "title": "Requests by Endpoint",
       "type": "table",
       "targets": [
-        { "expr": "sum(flask_http_request_total) by (endpoint)", "format": "table", "instant": true, "refId": "A" }
+        { "expr": "sum(flask_http_request_duration_seconds_count) by (path)", "format": "table", "instant": true, "refId": "A" }
       ],
       "transformations": [
-        { "id": "organize", "options": { "excludeByName": { "Time": true }, "renameByName": { "Value": "Count", "endpoint": "Endpoint" } } }
+        { "id": "organize", "options": { "excludeByName": { "Time": true }, "renameByName": { "Value": "Count", "path": "Endpoint" } } }
       ]
     }
   ],

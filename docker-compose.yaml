@@ -1,8 +1,6 @@
 # Docker Compose - Rick & Morty API with Full Monitoring Stack
 # Includes: App, Prometheus, Grafana
 
-version: '3.8'
-
 services:
   # ==========================================
   # Main Application

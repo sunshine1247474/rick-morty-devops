@@ -1,0 +1,267 @@
+# ============================================
+# Terraform Infrastructure Pipeline (BONUS)
+# ============================================
+# WHY Terraform in CI/CD?
+# - Infrastructure changes are reviewed via PR
+# - Consistent, repeatable deployments
+# - Audit trail of all changes
+# - No manual console clicking
+#
+# INTERVIEW TIP: "We treat infrastructure as code. Changes
+# go through PR review, terraform plan shows what will change,
+# and only merged PRs trigger actual infrastructure changes."
+
+name: Terraform Infrastructure
+
+on:
+  push:
+    branches: [main, master]
+    paths:
+      - 'infra/**'
+      - '.github/workflows/terraform.yaml'
+  pull_request:
+    branches: [main, master]
+    paths:
+      - 'infra/**'
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'Terraform action to perform'
+        required: true
+        default: 'plan'
+        type: choice
+        options:
+          - plan
+          - apply
+          - destroy
+
+env:
+  AWS_REGION: eu-west-1
+  TF_VERSION: 1.6.0
+  WORKING_DIR: infra
+
+jobs:
+  # ============================================
+  # Job 1: Terraform Plan
+  # ============================================
+  # Always run plan to show what will change
+  
+  plan:
+    name: Terraform Plan
+    runs-on: ubuntu-latest
+    
+    permissions:
+      id-token: write
+      contents: read
+      pull-requests: write  # To comment on PRs
+    
+    outputs:
+      plan_exitcode: ${{ steps.plan.outputs.exitcode }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+      
+      # ============================================
+      # Setup Terraform
+      # ============================================
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+      
+      # ============================================
+      # Terraform Init
+      # ============================================
+      # WHY init?
+      # - Downloads providers
+      # - Configures backend (S3)
+      # - Prepares working directory
+      
+      - name: Terraform Init
+        id: init
+        working-directory: ${{ env.WORKING_DIR }}
+        run: terraform init
+      
+      # ============================================
+      # Terraform Validate
+      # ============================================
+      # WHY validate?
+      # - Checks syntax
+      # - Catches errors early
+      # - Fast feedback
+      
+      - name: Terraform Validate
+        id: validate
+        working-directory: ${{ env.WORKING_DIR }}
+        run: terraform validate
+      
+      # ============================================
+      # Terraform Plan
+      # ============================================
+      # WHY plan?
+      # - Shows what will change BEFORE applying
+      # - Review infrastructure changes
+      # - Catch mistakes before they happen
+      #
+      # INTERVIEW TIP: "terraform plan is like a dry-run.
+      # It shows exactly what will be created, modified, or
+      # destroyed without making any actual changes."
+      
+      - name: Terraform Plan
+        id: plan
+        working-directory: ${{ env.WORKING_DIR }}
+        run: |
+          terraform plan -out=tfplan -no-color -detailed-exitcode
+        continue-on-error: true
+      
+      # ============================================
+      # Comment Plan on PR
+      # ============================================
+      # Post the plan output to the PR for review
+      
+      - name: Comment Plan on PR
+        uses: actions/github-script@v7
+        if: github.event_name == 'pull_request'
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const output = `#### Terraform Plan 📖
+            
+            | Step | Status |
+            |------|--------|
+            | Init | ${{ steps.init.outcome }} |
+            | Validate | ${{ steps.validate.outcome }} |
+            | Plan | ${{ steps.plan.outcome }} |
+            
+            *Pushed by: @${{ github.actor }}, Action: \`${{ github.event_name }}\`*`;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: output
+            })
+      
+      # Upload plan for apply job
+      - name: Upload Plan
+        uses: actions/upload-artifact@v4
+        with:
+          name: tfplan
+          path: ${{ env.WORKING_DIR }}/tfplan
+
+  # ============================================
+  # Job 2: Terraform Apply
+  # ============================================
+  # Only runs on push to main or manual trigger
+  
+  apply:
+    name: Terraform Apply
+    needs: plan
+    runs-on: ubuntu-latest
+    if: |
+      github.event_name == 'push' || 
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'apply')
+    
+    permissions:
+      id-token: write
+      contents: read
+    
+    environment: production  # Requires manual approval (if configured)
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+      
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+      
+      - name: Terraform Init
+        working-directory: ${{ env.WORKING_DIR }}
+        run: terraform init
+      
+      # Download the plan from previous job
+      - name: Download Plan
+        uses: actions/download-artifact@v4
+        with:
+          name: tfplan
+          path: ${{ env.WORKING_DIR }}
+      
+      # ============================================
+      # Terraform Apply
+      # ============================================
+      # WHY apply the saved plan?
+      # - Ensures we apply exactly what was reviewed
+      # - No surprises between plan and apply
+      
+      - name: Terraform Apply
+        working-directory: ${{ env.WORKING_DIR }}
+        run: |
+          terraform apply -auto-approve tfplan
+          echo "✅ Infrastructure deployed successfully!"
+      
+      # Output important values
+      - name: Show Outputs
+        working-directory: ${{ env.WORKING_DIR }}
+        run: terraform output
+
+  # ============================================
+  # Job 3: Terraform Destroy (Manual Only)
+  # ============================================
+  # Dangerous! Only for cleanup
+  
+  destroy:
+    name: Terraform Destroy
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'destroy'
+    
+    permissions:
+      id-token: write
+      contents: read
+    
+    environment: production  # Requires approval
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+      
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+      
+      - name: Terraform Init
+        working-directory: ${{ env.WORKING_DIR }}
+        run: terraform init
+      
+      # ============================================
+      # Terraform Destroy
+      # ============================================
+      # ⚠️ DANGEROUS - Deletes all infrastructure
+      
+      - name: Terraform Destroy
+        working-directory: ${{ env.WORKING_DIR }}
+        run: |
+          echo "⚠️ Destroying all infrastructure..."
+          terraform destroy -auto-approve
+          echo "🗑️ Infrastructure destroyed!"
