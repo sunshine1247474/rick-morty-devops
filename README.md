@@ -444,9 +444,23 @@ monitoring/
 
 ## 📸 Screenshots
 
-### Grafana Dashboard
-> After running `docker-compose up -d`, navigate to http://localhost:3000 (admin/admin)
-> Go to Dashboards → Rick & Morty API Dashboard
+### Grafana Dashboard - Monitoring in Action
+
+![Grafana Dashboard](screenshots/grafana-dashboard.png)
+
+**Dashboard Features:**
+- ✅ **API Status** - Real-time UP/DOWN indicator
+- 📊 **Request Rate** - Requests per second by endpoint
+- ⏱️ **Response Time Percentiles** - p50, p95, p99 latency
+- 📈 **HTTP Status Codes** - Success/Error distribution
+- 🥧 **Status Code Distribution** - Pie chart visualization
+- 📋 **Requests by Endpoint** - Count per endpoint table
+
+### How to Access
+1. Run `docker-compose up -d`
+2. Navigate to http://localhost:3000
+3. Login: admin / admin
+4. Go to Dashboards → Rick & Morty API Dashboard
 
 ### Prometheus Targets
 > Navigate to http://localhost:9090/targets to see scrape status
