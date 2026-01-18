@@ -5632,4 +5632,1046 @@ git pull                      # מושך שינויים מ-GitHub
 
 **בהצלחה בראיון!** 🚀
 
+---
+
+# חלק ד׳: תרגיל הכספת - תרגול מעשי מקיף
+
+## 🎯 תרגיל 008 - End-to-End CI/CD and DevOps Setup
+
+זהו תרגיל מקיף שמכסה את כל מחזור חיי האפליקציה מקוד ועד Production.
+**המטרה:** לבנות URL Shortener API עם תשתית DevOps מלאה.
+
+---
+
+## Sub-task 1: Repository and Branching Strategy
+
+### ❓ "איך מגדירים אסטרטגיית Branching?"
+
+**Git Flow - המודל הנפוץ:**
+
+```
+main (production)
+  │
+  ├── develop (integration branch)
+  │     │
+  │     ├── feature/add-url-shortening
+  │     ├── feature/add-analytics
+  │     └── feature/add-rate-limiting
+  │
+  ├── release/v1.0.0
+  │
+  └── hotfix/fix-critical-bug
+```
+
+**זרימת קוד מ-Feature ל-Production:**
+
+```yaml
+# 1. יוצרים feature branch מ-develop
+git checkout develop
+git checkout -b feature/add-url-shortening
+
+# 2. מפתחים ודוחפים
+git add .
+git commit -m "feat: add URL shortening endpoint"
+git push origin feature/add-url-shortening
+
+# 3. פותחים Pull Request ל-develop
+# PR עובר: Code Review, CI checks, Tests
+
+# 4. Merge ל-develop
+# 5. כשמוכנים לרלייס: develop → release → main
+```
+
+**Branch Protection Rules (הגדרות הגנה):**
+
+```yaml
+# מה צריך לעבור לפני Merge ל-main:
+
+Required Status Checks:
+  - ci/tests-passed        # בדיקות עברו
+  - ci/linting-passed      # אין שגיאות סגנון
+  - security/scan-passed   # סריקת אבטחה עברה
+  
+Required Reviews:
+  - Minimum 2 approvers    # לפחות 2 אישורים
+  - Dismiss stale reviews  # אישורים ישנים מתבטלים
+  
+Branch Restrictions:
+  - No force push          # אסור דחיפה מאולצת
+  - Require linear history # היסטוריה לינארית
+```
+
+**Tagging Strategy (גרסאות):**
+
+```bash
+# Semantic Versioning: MAJOR.MINOR.PATCH
+v1.0.0  # גרסה ראשונה
+v1.1.0  # תכונה חדשה (minor)
+v1.1.1  # תיקון באג (patch)
+v2.0.0  # שינוי שובר (major)
+
+# יצירת Tag
+git tag -a v1.2.0 -m "Release v1.2.0: Add analytics feature"
+git push origin v1.2.0
+
+# Kubernetes יודע להשתמש ב-Tag:
+image: my-app:v1.2.0
+```
+
+---
+
+## Sub-task 2: Containerization
+
+### ❓ "איך כותבים Dockerfile מותאם ל-Production?"
+
+**Dockerfile אופטימלי - Multi-Stage:**
+
+```dockerfile
+# ========== STAGE 1: BUILD ==========
+FROM node:18-alpine AS builder
+
+# יוצר user לא-root (אבטחה!)
+RUN addgroup -g 1001 -S appgroup && \
+    adduser -u 1001 -S appuser -G appgroup
+
+WORKDIR /app
+
+# מעתיק רק package.json קודם (cache optimization)
+COPY package*.json ./
+RUN npm ci --only=production
+
+# מעתיק שאר הקוד
+COPY . .
+
+# בונה את האפליקציה
+RUN npm run build
+
+# ========== STAGE 2: RUNTIME ==========
+FROM node:18-alpine AS runtime
+
+# יוצר אותו user
+RUN addgroup -g 1001 -S appgroup && \
+    adduser -u 1001 -S appuser -G appgroup
+
+WORKDIR /app
+
+# מעתיק רק מה שצריך מה-builder
+COPY --from=builder --chown=appuser:appgroup /app/dist ./dist
+COPY --from=builder --chown=appuser:appgroup /app/node_modules ./node_modules
+COPY --from=builder --chown=appuser:appgroup /app/package.json ./
+
+# עובר ל-user לא-root
+USER appuser
+
+# מגדיר משתני סביבה
+ENV NODE_ENV=production
+ENV PORT=3000
+
+EXPOSE 3000
+
+# Health check מובנה
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD wget --no-verbose --tries=1 --spider http://localhost:3000/health || exit 1
+
+CMD ["node", "dist/index.js"]
+```
+
+**למה Multi-Stage חשוב?**
+
+| מאפיין | Single Stage | Multi-Stage |
+|--------|--------------|-------------|
+| **גודל Image** | ~800MB | ~150MB |
+| **Build Tools** | נשארים | מוסרים |
+| **אבטחה** | יותר attack surface | מינימלי |
+| **זמן Deploy** | ארוך | קצר |
+
+**Image Tagging Strategy:**
+
+```yaml
+# בכל build, יוצרים כמה tags:
+
+# 1. Semantic Version (לproduction)
+my-app:v1.2.3
+
+# 2. Commit SHA (לזיהוי מדויק)
+my-app:abc123f
+
+# 3. Branch name (לdev/staging)
+my-app:develop
+my-app:feature-analytics
+
+# 4. Latest (זהירות! לא לproduction)
+my-app:latest
+
+# דוגמה ב-CI:
+docker build -t my-app:${GIT_TAG} \
+             -t my-app:${GIT_SHA:0:7} \
+             -t my-app:${BRANCH_NAME} .
+```
+
+**Vulnerability Scanning (סריקת פגיעויות):**
+
+```yaml
+# בתוך CI Pipeline:
+
+scan-image:
+  runs-on: ubuntu-latest
+  steps:
+    - name: Build Image
+      run: docker build -t my-app:${{ github.sha }} .
+    
+    - name: Scan with Trivy
+      uses: aquasecurity/trivy-action@master
+      with:
+        image-ref: my-app:${{ github.sha }}
+        format: 'table'
+        exit-code: '1'                    # נכשל אם יש CRITICAL
+        severity: 'CRITICAL,HIGH'
+    
+    - name: Scan with Snyk
+      uses: snyk/actions/docker@master
+      with:
+        image: my-app:${{ github.sha }}
+        args: --severity-threshold=high
+```
+
+---
+
+## Sub-task 3: CI Pipeline
+
+### ❓ "מה צריך להיות ב-CI Pipeline?"
+
+**Pipeline מלא:**
+
+```yaml
+name: CI Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  # ====== JOB 1: TESTS ======
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Install Dependencies
+        run: npm ci
+      
+      - name: Run Unit Tests
+        run: npm test -- --coverage
+      
+      - name: Upload Coverage
+        uses: codecov/codecov-action@v3
+        with:
+          fail_ci_if_error: true
+          minimum_coverage: 80    # נכשל אם פחות מ-80%
+
+  # ====== JOB 2: LINTING ======
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Run ESLint
+        run: npm run lint
+      
+      - name: Run Prettier Check
+        run: npm run format:check
+
+  # ====== JOB 3: SECURITY ======
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Run npm audit
+        run: npm audit --audit-level=high
+      
+      - name: SAST Scan
+        uses: github/codeql-action/analyze@v2
+
+  # ====== JOB 4: BUILD & PUSH ======
+  build:
+    needs: [test, lint, security]    # תלוי בהצלחת כל הקודמים
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'   # רק ב-push, לא ב-PR
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Login to Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Build and Push
+        uses: docker/build-push-action@v5
+        with:
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository }}:${{ github.sha }}
+            ghcr.io/${{ github.repository }}:latest
+      
+      - name: Scan Image
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ghcr.io/${{ github.repository }}:${{ github.sha }}
+          exit-code: '1'
+          severity: 'CRITICAL'
+
+  # ====== QUALITY GATE ======
+  quality-gate:
+    needs: [test, lint, security, build]
+    runs-on: ubuntu-latest
+    steps:
+      - name: All Checks Passed
+        run: echo "✅ All quality gates passed!"
+```
+
+**Quality Gates - מה חייב לעבור:**
+
+| Gate | תיאור | כשל ב... |
+|------|-------|----------|
+| **Tests** | Unit tests עוברים | טסט נכשל |
+| **Coverage** | ≥80% code coverage | פחות מ-80% |
+| **Linting** | אין שגיאות ESLint | שגיאת lint |
+| **Security** | אין HIGH vulnerabilities | פגיעות חמורה |
+| **Build** | Docker build הצליח | שגיאת build |
+
+---
+
+## Sub-task 4: Kubernetes Deployment Manifests
+
+### ❓ "מה צריך ב-K8s Manifests?"
+
+**Deployment עם Best Practices:**
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: url-shortener
+  labels:
+    app: url-shortener
+    version: v1.2.0
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: url-shortener
+  
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1         # כמה Pods להוסיף מעבר למבוקש
+      maxUnavailable: 0   # לא להוריד Pods לפני שחדשים מוכנים
+  
+  template:
+    metadata:
+      labels:
+        app: url-shortener
+        version: v1.2.0
+    spec:
+      containers:
+      - name: app
+        image: my-app:v1.2.0
+        
+        # Resource Limits - חובה!
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+          limits:
+            cpu: "500m"
+            memory: "512Mi"
+        
+        # Probes - קריטי לזמינות
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 3000
+          initialDelaySeconds: 10
+          periodSeconds: 30
+          failureThreshold: 3
+        
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 3000
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          failureThreshold: 3
+        
+        # Environment Variables
+        env:
+        - name: NODE_ENV
+          value: "production"
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: database-url
+        
+        ports:
+        - containerPort: 3000
+      
+      # Security Context
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+```
+
+**הפרדת Environments - Helm Values:**
+
+```yaml
+# values-staging.yaml
+replicaCount: 2
+image:
+  tag: develop
+resources:
+  requests:
+    cpu: "50m"
+    memory: "64Mi"
+  limits:
+    cpu: "200m"
+    memory: "256Mi"
+ingress:
+  host: staging.myapp.com
+
+# values-production.yaml
+replicaCount: 5
+image:
+  tag: v1.2.0
+resources:
+  requests:
+    cpu: "200m"
+    memory: "256Mi"
+  limits:
+    cpu: "1000m"
+    memory: "1Gi"
+ingress:
+  host: myapp.com
+  tls: true
+```
+
+**פקודות Deploy:**
+
+```bash
+# Staging
+helm upgrade --install my-app ./helm \
+  -f values-staging.yaml \
+  -n staging
+
+# Production
+helm upgrade --install my-app ./helm \
+  -f values-production.yaml \
+  -n production
+```
+
+---
+
+## Sub-task 5: CD Pipeline and Environments
+
+### ❓ "איך בונים CD Pipeline?"
+
+**CD Pipeline עם הפרדת Environments:**
+
+```yaml
+name: CD Pipeline
+
+on:
+  push:
+    branches: [develop, main]
+    tags: ['v*']
+
+jobs:
+  # ====== DEPLOY TO STAGING ======
+  deploy-staging:
+    if: github.ref == 'refs/heads/develop'
+    runs-on: ubuntu-latest
+    environment: staging    # Requires environment approval in GitHub
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Kubectl
+        uses: azure/setup-kubectl@v3
+      
+      - name: Deploy to Staging
+        run: |
+          helm upgrade --install my-app ./helm \
+            -f values-staging.yaml \
+            -n staging \
+            --set image.tag=${{ github.sha }}
+      
+      - name: Verify Deployment
+        run: |
+          kubectl rollout status deployment/my-app -n staging --timeout=300s
+
+  # ====== DEPLOY TO PRODUCTION ======
+  deploy-production:
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    environment: production    # Requires manual approval!
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Extract Version
+        id: version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+      
+      - name: Deploy to Production
+        run: |
+          helm upgrade --install my-app ./helm \
+            -f values-production.yaml \
+            -n production \
+            --set image.tag=${{ steps.version.outputs.VERSION }}
+      
+      - name: Verify Deployment
+        run: |
+          kubectl rollout status deployment/my-app -n production --timeout=600s
+      
+      - name: Create GitHub Release
+        uses: actions/create-release@v1
+        with:
+          tag_name: ${{ steps.version.outputs.VERSION }}
+          release_name: Release ${{ steps.version.outputs.VERSION }}
+          draft: false
+          prerelease: false
+```
+
+**Rollback Procedure:**
+
+```bash
+# 1. ראה היסטוריית rollouts
+kubectl rollout history deployment/my-app -n production
+
+# 2. חזור לגרסה קודמת
+kubectl rollout undo deployment/my-app -n production
+
+# 3. או לגרסה ספציפית
+kubectl rollout undo deployment/my-app -n production --to-revision=5
+
+# 4. עם Helm
+helm rollback my-app 1 -n production
+```
+
+---
+
+## Sub-task 6: Secrets and Configuration Management
+
+### ❓ "איך מנהלים Secrets בצורה בטוחה?"
+
+**אופציות לניהול Secrets:**
+
+| שיטה | יתרון | חסרון |
+|------|-------|-------|
+| **K8s Secrets** | פשוט | לא מוצפן ב-rest |
+| **Sealed Secrets** | מוצפן ב-Git | צריך controller |
+| **External Secrets** | מרכזי | תלות חיצונית |
+| **HashiCorp Vault** | הכי בטוח | מורכב |
+
+**External Secrets Operator - המלצה:**
+
+```yaml
+# 1. הגדרת SecretStore (מחובר ל-AWS Secrets Manager)
+apiVersion: external-secrets.io/v1beta1
+kind: SecretStore
+metadata:
+  name: aws-secrets
+  namespace: production
+spec:
+  provider:
+    aws:
+      service: SecretsManager
+      region: us-east-1
+      auth:
+        jwt:
+          serviceAccountRef:
+            name: external-secrets-sa
+
+# 2. הגדרת ExternalSecret (מושך את ה-Secret)
+apiVersion: external-secrets.io/v1beta1
+kind: ExternalSecret
+metadata:
+  name: app-secrets
+  namespace: production
+spec:
+  refreshInterval: 1h
+  secretStoreRef:
+    name: aws-secrets
+    kind: SecretStore
+  target:
+    name: app-secrets
+  data:
+  - secretKey: database-url
+    remoteRef:
+      key: prod/my-app/database
+      property: url
+  - secretKey: api-key
+    remoteRef:
+      key: prod/my-app/api
+      property: key
+```
+
+**Secret Rotation (סיבוב סיסמאות):**
+
+```bash
+# 1. עדכן Secret ב-AWS Secrets Manager
+aws secretsmanager update-secret \
+  --secret-id prod/my-app/database \
+  --secret-string '{"url":"new-connection-string"}'
+
+# 2. External Secrets Operator יעדכן אוטומטית (לפי refreshInterval)
+
+# 3. Pods ישתמשו ב-Secret החדש
+# אפשרות א: Restart Pods
+kubectl rollout restart deployment/my-app -n production
+
+# אפשרות ב: שימוש ב-Reloader (אוטומטי)
+# https://github.com/stakater/Reloader
+```
+
+**חוקי ברזל לSecrets:**
+
+1. ❌ לעולם לא ב-Git (גם לא מוצפן)
+2. ❌ לעולם לא ב-Docker Image
+3. ❌ לעולם לא ב-CI config בפלטטקסט
+4. ✅ Environment Variables או Mounted Files
+5. ✅ External Secret Manager
+
+---
+
+## Sub-task 7: Observability and Logging
+
+### ❓ "איך מממשים Observability?"
+
+**3 עמודי Observability:**
+
+```
+         ┌──────────────────────────────────────────┐
+         │           OBSERVABILITY                  │
+         ├────────────┬────────────┬────────────────┤
+         │   LOGS     │   METRICS  │    TRACES      │
+         │            │            │                │
+         │ מה קרה?    │ כמה?       │ איפה הבעיה?    │
+         │            │            │                │
+         │ FluentBit  │ Prometheus │ Jaeger         │
+         │ → Loki     │ → Grafana  │ → Zipkin       │
+         └────────────┴────────────┴────────────────┘
+```
+
+**Structured Logging (Node.js):**
+
+```javascript
+// logger.js
+const winston = require('winston');
+
+const logger = winston.createLogger({
+  level: process.env.LOG_LEVEL || 'info',
+  format: winston.format.combine(
+    winston.format.timestamp(),
+    winston.format.json()
+  ),
+  defaultMeta: { 
+    service: 'url-shortener',
+    version: process.env.APP_VERSION 
+  },
+  transports: [
+    new winston.transports.Console()
+  ]
+});
+
+// שימוש:
+logger.info('URL shortened', {
+  correlationId: req.headers['x-correlation-id'],
+  originalUrl: url,
+  shortCode: code,
+  userId: req.user?.id,
+  duration: Date.now() - startTime
+});
+
+// Output:
+// {
+//   "timestamp": "2025-01-18T10:30:00.000Z",
+//   "level": "info",
+//   "message": "URL shortened",
+//   "service": "url-shortener",
+//   "correlationId": "abc-123",
+//   "originalUrl": "https://example.com",
+//   "shortCode": "xyz789",
+//   "duration": 45
+// }
+```
+
+**Prometheus Metrics:**
+
+```javascript
+// metrics.js
+const client = require('prom-client');
+
+// Counter - כמה בקשות
+const httpRequestsTotal = new client.Counter({
+  name: 'http_requests_total',
+  help: 'Total HTTP requests',
+  labelNames: ['method', 'path', 'status']
+});
+
+// Histogram - זמני תגובה
+const httpRequestDuration = new client.Histogram({
+  name: 'http_request_duration_seconds',
+  help: 'HTTP request duration in seconds',
+  labelNames: ['method', 'path'],
+  buckets: [0.01, 0.05, 0.1, 0.5, 1, 2, 5]
+});
+
+// Gauge - ערך נוכחי
+const activeConnections = new client.Gauge({
+  name: 'active_connections',
+  help: 'Number of active connections'
+});
+
+// Middleware
+app.use((req, res, next) => {
+  const start = Date.now();
+  res.on('finish', () => {
+    const duration = (Date.now() - start) / 1000;
+    httpRequestsTotal.inc({ 
+      method: req.method, 
+      path: req.route?.path || req.path, 
+      status: res.statusCode 
+    });
+    httpRequestDuration.observe({ 
+      method: req.method, 
+      path: req.route?.path || req.path 
+    }, duration);
+  });
+  next();
+});
+
+// Endpoint for Prometheus scraping
+app.get('/metrics', async (req, res) => {
+  res.set('Content-Type', client.register.contentType);
+  res.send(await client.register.metrics());
+});
+```
+
+**ServiceMonitor (K8s):**
+
+```yaml
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: url-shortener
+  labels:
+    release: prometheus
+spec:
+  selector:
+    matchLabels:
+      app: url-shortener
+  endpoints:
+  - port: http
+    path: /metrics
+    interval: 15s
+```
+
+---
+
+## Sub-task 8: Reliability and Deployment Safety
+
+### ❓ "איך מבטיחים Deployment בטוח?"
+
+**Blue-Green Deployment:**
+
+```yaml
+# שני Deployments - Blue (נוכחי) ו-Green (חדש)
+
+# blue-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-app-blue
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: my-app
+      version: blue
+  template:
+    metadata:
+      labels:
+        app: my-app
+        version: blue
+    spec:
+      containers:
+      - name: app
+        image: my-app:v1.0.0
+
+# green-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-app-green
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: my-app
+      version: green
+  template:
+    metadata:
+      labels:
+        app: my-app
+        version: green
+    spec:
+      containers:
+      - name: app
+        image: my-app:v2.0.0
+
+# Service - מצביע על Blue או Green
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-app
+spec:
+  selector:
+    app: my-app
+    version: blue    # ← שנה ל-green להחלפה!
+  ports:
+  - port: 80
+    targetPort: 3000
+```
+
+**Canary Deployment (עם Istio):**
+
+```yaml
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: my-app
+spec:
+  hosts:
+  - my-app
+  http:
+  - route:
+    - destination:
+        host: my-app
+        subset: stable
+      weight: 90        # 90% לגרסה יציבה
+    - destination:
+        host: my-app
+        subset: canary
+      weight: 10        # 10% לגרסה חדשה
+
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: my-app
+spec:
+  host: my-app
+  subsets:
+  - name: stable
+    labels:
+      version: v1.0.0
+  - name: canary
+    labels:
+      version: v2.0.0
+```
+
+**Auto-Rollback Conditions:**
+
+```yaml
+# בPipeline - בדיקה אחרי Deploy
+- name: Verify Deployment Health
+  run: |
+    # המתן ל-Pods להיות Ready
+    kubectl rollout status deployment/my-app -n production --timeout=300s
+    
+    # בדוק error rate ב-Prometheus
+    ERROR_RATE=$(curl -s "http://prometheus:9090/api/v1/query?query=rate(http_requests_total{status=~'5..'}[5m])/rate(http_requests_total[5m])*100" | jq '.data.result[0].value[1]')
+    
+    if (( $(echo "$ERROR_RATE > 5" | bc -l) )); then
+      echo "❌ Error rate too high: ${ERROR_RATE}%"
+      kubectl rollout undo deployment/my-app -n production
+      exit 1
+    fi
+    
+    echo "✅ Deployment healthy!"
+```
+
+**Failed Deployment Scenario:**
+
+```
+1. Deploy v2.0.0 מתחיל
+2. Pods חדשים עולים
+3. Readiness Probe נכשל (אפליקציה לא עולה)
+4. K8s לא מפנה traffic לPods החדשים
+5. אחרי 3 נסיונות (failureThreshold) - Pod מסומן Unhealthy
+6. RollingUpdate לא ממשיך (maxUnavailable: 0)
+7. CI/CD timeout → Rollback אוטומטי
+8. v1.0.0 ממשיך לרוץ ללא הפרעה
+```
+
+---
+
+## Sub-task 9: Documentation and Runbook
+
+### ❓ "מה צריך להיות ב-README?"
+
+**README מבנה מומלץ:**
+
+```markdown
+# URL Shortener API
+
+## 🚀 Quick Start
+
+### Running Locally
+\```bash
+git clone https://github.com/org/url-shortener.git
+cd url-shortener
+npm install
+npm run dev
+\```
+
+### Running with Docker
+\```bash
+docker build -t url-shortener .
+docker run -p 3000:3000 url-shortener
+\```
+
+### Running in Kubernetes
+\```bash
+kubectl apply -f k8s/
+# or
+helm install url-shortener ./helm -n production
+\```
+
+## 📦 CI/CD Pipeline
+
+\```
+Push to develop → CI Tests → Build Image → Deploy to Staging
+Push tag v*.*.* → CI Tests → Build Image → Manual Approval → Deploy to Production
+\```
+
+### Pipeline Jobs:
+1. **test**: Unit tests + coverage (must be ≥80%)
+2. **lint**: ESLint + Prettier
+3. **security**: npm audit + SAST
+4. **build**: Docker build + push to registry
+5. **deploy**: Helm upgrade to K8s
+
+## 🌍 Environments
+
+| Env | URL | Deployment Trigger |
+|-----|-----|--------------------|
+| Staging | staging.myapp.com | Push to develop |
+| Production | myapp.com | Tag v*.*.* + approval |
+
+## 📊 Monitoring
+
+- **Grafana**: https://grafana.myapp.com
+- **Prometheus**: https://prometheus.myapp.com
+- **Logs**: https://kibana.myapp.com
+```
+
+**Ops Runbook:**
+
+```markdown
+# Operations Runbook
+
+## 🔴 CI Pipeline Failed
+
+### Symptoms
+- GitHub Actions shows red X
+- Deployment didn't happen
+
+### Steps
+1. Check which job failed in GitHub Actions
+2. Read the error logs
+3. Common issues:
+   - **Test failed**: Fix the failing test
+   - **Lint failed**: Run `npm run lint:fix`
+   - **Security failed**: Update vulnerable packages
+   - **Build failed**: Check Dockerfile
+
+### Escalation
+If can't resolve in 30 minutes → Contact Team Lead
+
+---
+
+## 🔴 Deployment Failed / Service Unhealthy
+
+### Symptoms
+- Alerts from Prometheus/PagerDuty
+- 5xx errors in logs
+- Pods in CrashLoopBackOff
+
+### Immediate Actions (< 5 min)
+1. **Check current status:**
+   \```bash
+   kubectl get pods -n production
+   kubectl describe pod <pod-name> -n production
+   \```
+
+2. **Check logs:**
+   \```bash
+   kubectl logs -l app=url-shortener -n production --tail=100
+   \```
+
+3. **Rollback if needed:**
+   \```bash
+   kubectl rollout undo deployment/url-shortener -n production
+   # or with Helm
+   helm rollback url-shortener 1 -n production
+   \```
+
+### Investigation (after service is stable)
+1. Check what changed in the last deployment
+2. Review Grafana dashboards for anomalies
+3. Check external dependencies (DB, APIs)
+
+### Post-Incident
+1. Write incident report
+2. Update runbook if needed
+3. Create tickets for preventive measures
+```
+
+---
+
+## 📋 סיכום: מה למדנו בתרגיל?
+
+| Sub-task | מה למדנו | כלים |
+|----------|----------|------|
+| **1. Branching** | Git Flow, Branch Protection | Git, GitHub |
+| **2. Containerization** | Multi-stage, Security | Docker, Trivy |
+| **3. CI Pipeline** | Tests, Linting, Quality Gates | GitHub Actions |
+| **4. K8s Manifests** | Deployment, Probes, Resources | kubectl, Helm |
+| **5. CD Pipeline** | Environments, Rollback | ArgoCD, Helm |
+| **6. Secrets** | External Secrets, Rotation | AWS SM, Vault |
+| **7. Observability** | Logs, Metrics, Traces | Prometheus, Grafana |
+| **8. Reliability** | Blue-Green, Canary | Istio, Argo Rollouts |
+| **9. Documentation** | README, Runbook | Markdown |
+
+---
+
+**🎯 טיפ לראיון:**
+
+כשמבקשים ממך לתאר איך היית בונה CI/CD Pipeline, עבור על כל 9 ה-Sub-tasks בצורה מסודרת.
+זה מראה שאתה חושב בצורה מקיפה ומקצועית!
+
 </div>
