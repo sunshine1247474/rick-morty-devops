@@ -1,194 +1,92 @@
-# ============================================
-# CI/CD Pipeline - Build and Deploy
-# ============================================
-# WHY GitHub Actions?
-# - Native GitHub integration
-# - Free for public repos
-# - Easy to configure with YAML
-# - Supports OIDC for secure AWS auth
-#
-# INTERVIEW TIP: "We use GitHub Actions for CI/CD because
-# it integrates directly with our repo. On every push to main,
-# we build the image, push to ECR, and deploy to EKS automatically."
-
-name: CI/CD Pipeline
+# =============================================================================
+# CI/CD Pipeline - Build, Push to ECR, Deploy to EKS
+# =============================================================================
+name: CI/CD to EKS
 
 on:
   push:
-    branches: [main, master]
+    branches: ["main"]
     paths:
-      - 'app/**'
-      - 'helm/**'
-      - '.github/workflows/ci-cd.yaml'
-  pull_request:
-    branches: [main, master]
-  workflow_dispatch:  # Manual trigger
+      - "devops-eks-project/app/**"
+      - "devops-eks-project/helm/**"
+      - "devops-eks-project/.github/workflows/ci-cd.yaml"
+  workflow_dispatch:
 
-# ============================================
-# Environment Variables
-# ============================================
 env:
   AWS_REGION: eu-west-1
-  ECR_REPOSITORY: hello-flask-app
   EKS_CLUSTER_NAME: hello-flask-cluster
+  ECR_REPOSITORY_NAME: hello-flask-app
 
 jobs:
-  # ============================================
-  # Job 1: Build and Push Docker Image
-  # ============================================
-  build:
-    name: Build & Push
+  build-and-deploy:
     runs-on: ubuntu-latest
-    
-    # Required for OIDC authentication
     permissions:
-      id-token: write
+      id-token: write   # Required for OIDC
       contents: read
-    
-    outputs:
-      image_tag: ${{ steps.build.outputs.image_tag }}
-    
+
     steps:
-      # ============================================
-      # Checkout Code
-      # ============================================
+      # ─────────────────────────────────────────────────────────────────────
+      # 1. Checkout Code
+      # ─────────────────────────────────────────────────────────────────────
       - name: Checkout code
         uses: actions/checkout@v4
-      
-      # ============================================
-      # Configure AWS Credentials (OIDC)
-      # ============================================
-      # WHY OIDC?
-      # - No long-lived credentials stored in GitHub
-      # - More secure than access keys
-      # - Follows AWS best practices
-      #
-      # INTERVIEW TIP: "We use OIDC federation instead of
-      # storing AWS access keys. GitHub exchanges its JWT
-      # for temporary AWS credentials with limited scope."
-      
-      - name: Configure AWS credentials
+
+      # ─────────────────────────────────────────────────────────────────────
+      # 2. Configure AWS Credentials (OIDC - No secrets stored!)
+      # ─────────────────────────────────────────────────────────────────────
+      - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/GitHubActionsEKSRole
           aws-region: ${{ env.AWS_REGION }}
-      
-      # ============================================
-      # Login to ECR
-      # ============================================
+
+      # ─────────────────────────────────────────────────────────────────────
+      # 3. Login to Amazon ECR
+      # ─────────────────────────────────────────────────────────────────────
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
-      
-      # ============================================
-      # Build, Tag, and Push Docker Image
-      # ============================================
-      - name: Build and push Docker image
-        id: build
+
+      # ─────────────────────────────────────────────────────────────────────
+      # 4. Build, Tag, and Push Docker Image
+      # ─────────────────────────────────────────────────────────────────────
+      - name: Build, tag, and push image to Amazon ECR
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           IMAGE_TAG: ${{ github.sha }}
         run: |
-          # Build image
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG ./app
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:latest ./app
-          
-          # Push both tags
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
-          
-          # Output image tag for deploy job
-          echo "image_tag=$IMAGE_TAG" >> $GITHUB_OUTPUT
-          echo "✅ Image pushed: $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+          cd devops-eks-project/app
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY_NAME:$IMAGE_TAG .
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY_NAME:latest .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY_NAME:$IMAGE_TAG
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY_NAME:latest
+          echo "IMAGE_URI=$ECR_REGISTRY/$ECR_REPOSITORY_NAME:$IMAGE_TAG" >> $GITHUB_OUTPUT
 
-  # ============================================
-  # Job 2: Deploy to EKS
-  # ============================================
-  deploy:
-    name: Deploy to EKS
-    needs: build
-    runs-on: ubuntu-latest
-    if: github.event_name != 'pull_request'  # Only deploy on push/merge
-    
-    permissions:
-      id-token: write
-      contents: read
-    
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
-          aws-region: ${{ env.AWS_REGION }}
-      
-      # ============================================
-      # Update kubeconfig
-      # ============================================
-      # This configures kubectl to talk to our EKS cluster
-      
+      # ─────────────────────────────────────────────────────────────────────
+      # 5. Update kubeconfig for EKS
+      # ─────────────────────────────────────────────────────────────────────
       - name: Update kubeconfig
         run: |
           aws eks update-kubeconfig --name ${{ env.EKS_CLUSTER_NAME }} --region ${{ env.AWS_REGION }}
-          kubectl get nodes  # Verify connection
-      
-      # ============================================
-      # Install Helm
-      # ============================================
-      - name: Set up Helm
-        uses: azure/setup-helm@v3
-        with:
-          version: v3.12.0
-      
-      # ============================================
-      # Deploy with Helm
-      # ============================================
-      # WHY Helm for deployment?
-      # - Templating for different environments
-      # - Easy rollback with helm rollback
-      # - Tracks release history
-      
-      - name: Deploy with Helm
-        env:
-          ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
-          IMAGE_TAG: ${{ needs.build.outputs.image_tag }}
+
+      # ─────────────────────────────────────────────────────────────────────
+      # 6. Deploy to EKS using Helm
+      # ─────────────────────────────────────────────────────────────────────
+      - name: Deploy to EKS with Helm
         run: |
-          helm upgrade --install hello-flask ./helm/hello-flask \
-            --namespace default \
-            --set image.repository=$ECR_REGISTRY/$ECR_REPOSITORY \
-            --set image.tag=$IMAGE_TAG \
+          helm upgrade --install hello-flask ./devops-eks-project/helm/hello-flask \
+            --set image.repository=${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY_NAME }} \
+            --set image.tag=${{ github.sha }} \
             --wait \
             --timeout 300s
-          
-          echo "✅ Deployment successful!"
-      
-      # ============================================
-      # Verify Deployment
-      # ============================================
-      - name: Verify deployment
+
+      # ─────────────────────────────────────────────────────────────────────
+      # 7. Get LoadBalancer URL
+      # ─────────────────────────────────────────────────────────────────────
+      - name: Get Service URL
         run: |
-          kubectl rollout status deployment/hello-flask -n default
-          kubectl get pods -n default -l app=hello-flask
-          
-          # Get the LoadBalancer URL
-          echo "🌐 LoadBalancer URL:"
-          kubectl get svc hello-flask -n default -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'
-      
-      # ============================================
-      # Smoke Test
-      # ============================================
-      - name: Smoke test
-        run: |
-          # Wait for LoadBalancer to be ready
-          sleep 60
-          
-          # Get the endpoint
-          ENDPOINT=$(kubectl get svc hello-flask -n default -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
-          
-          # Test health endpoint
-          echo "Testing health endpoint..."
-          curl -f http://$ENDPOINT/health || exit 1
-          
-          echo "✅ Smoke test passed!"
+          echo "Waiting for LoadBalancer..."
+          sleep 30
+          kubectl get svc hello-flask -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'
+          echo ""
+          echo "🎉 Deployment complete!"
