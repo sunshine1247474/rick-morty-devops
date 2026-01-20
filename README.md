@@ -411,6 +411,6 @@ monitoring/
 ---
 
 ## 👤 Author
-
+Itay Shklyar
 DevOps Home Exercise Solution - Complete with CI/CD and Monitoring
 
