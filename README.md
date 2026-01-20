@@ -336,11 +336,10 @@ docker-compose ps
 
 The pre-configured dashboard includes:
 
-```
+
 ### Grafana Dashboard - Monitoring in Action
 
 ![Grafana Dashboard](screenshots/grafana-dashboard.png)
-```
 
 ### 🔔 Configured Alerts
 
