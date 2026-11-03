@@ -1,4 +1,4 @@
-﻿# GitHub Actions CI/CD Pipeline
+# GitHub Actions CI/CD Pipeline
 # This workflow builds, tests, and deploys the Rick & Morty API
 
 name: CI/CD Pipeline

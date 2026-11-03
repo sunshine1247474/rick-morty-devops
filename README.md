@@ -1,4 +1,4 @@
-﻿# נ§× Rick and Morty Character Fetcher
+# נ§× Rick and Morty Character Fetcher
 
 ![CI/CD Pipeline](https://github.com/sunshine1247474/rick-morty-devops/actions/workflows/ci-cd.yaml/badge.svg)
 ![Docker](https://img.shields.io/badge/Docker-2CA5E0?style=flat&logo=docker&logoColor=white)
