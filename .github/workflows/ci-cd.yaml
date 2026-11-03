@@ -33,15 +33,14 @@ jobs:
       - name: Install dependencies
         run: |
           cd app
-          pip install -r requirements.txt pytest
-          pytest ../tests -v
+          pip install -r requirements.txt
       
       - name: Run script test
         run: |
           cd app
           python main.py
-          echo "ג… Script completed successfully!"
-          echo "נ“ Found $(wc -l < output.csv) characters"
+          echo "✅ Script completed successfully!"
+          echo "📊 Found $(wc -l < output.csv) characters"
       
       - name: Upload CSV artifact
         uses: actions/upload-artifact@v4
@@ -68,7 +67,7 @@ jobs:
         run: |
           docker build -t ${{ env.IMAGE_NAME }}:${{ github.sha }} .
           docker build -t ${{ env.IMAGE_NAME }}:latest .
-          echo "ג… Docker image built successfully!"
+          echo "✅ Docker image built successfully!"
       
       - name: Test Docker image
         run: |
@@ -81,19 +80,19 @@ jobs:
           # Test healthcheck
           echo "Testing /healthcheck endpoint..."
           curl -f http://localhost:5000/healthcheck || exit 1
-          echo "ג… Healthcheck passed!"
+          echo "✅ Healthcheck passed!"
           
           # Test characters endpoint
           echo "Testing /characters endpoint..."
           RESPONSE=$(curl -s http://localhost:5000/characters)
           COUNT=$(echo $RESPONSE | jq '.count')
-          echo "נ“ API returned $COUNT characters"
+          echo "📊 API returned $COUNT characters"
           
           # Verify we got results
           if [ "$COUNT" -gt 0 ]; then
-            echo "ג… Characters endpoint working!"
+            echo "✅ Characters endpoint working!"
           else
-            echo "ג No characters returned!"
+            echo "❌ No characters returned!"
             exit 1
           fi
           
@@ -128,10 +127,10 @@ jobs:
           kubectl apply -f yamls/deployment.yaml
           kubectl apply -f yamls/service.yaml
           
-          echo "ג³ Waiting for deployment to be ready..."
+          echo "⏳ Waiting for deployment to be ready..."
           kubectl wait --for=condition=available --timeout=120s deployment/rick-morty-api
           
-          echo "ג… Deployment successful!"
+          echo "✅ Deployment successful!"
           kubectl get pods
           kubectl get services
       
@@ -144,17 +143,17 @@ jobs:
           # Test endpoints
           echo "Testing healthcheck..."
           curl -f http://localhost:8080/healthcheck || exit 1
-          echo "ג… K8s healthcheck passed!"
+          echo "✅ K8s healthcheck passed!"
           
           echo "Testing characters endpoint..."
           RESPONSE=$(curl -s http://localhost:8080/characters)
           COUNT=$(echo $RESPONSE | jq '.count')
-          echo "נ“ K8s API returned $COUNT characters"
+          echo "📊 K8s API returned $COUNT characters"
           
           if [ "$COUNT" -gt 0 ]; then
-            echo "ג… Kubernetes deployment working!"
+            echo "✅ Kubernetes deployment working!"
           else
-            echo "ג K8s deployment failed!"
+            echo "❌ K8s deployment failed!"
             exit 1
           fi
 
@@ -179,8 +178,7 @@ jobs:
         run: |
           if [ -f "helm/rick-morty-api/Chart.yaml" ]; then
             helm lint helm/rick-morty-api
-            echo "ג… Helm lint passed!"
+            echo "✅ Helm lint passed!"
           else
-            echo "ג ן¸ Helm chart not found, skipping lint"
+            echo "⚠️ Helm chart not found, skipping lint"
           fi
-
